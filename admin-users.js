@@ -148,8 +148,15 @@
         if (typeof window.renderUsers === 'function') await window.renderUsers();
         setTimeout(() => show(false), 2200);
       } catch (error) {
-        msg.style.color='#a61b1b';
-        msg.textContent = error?.message || 'No se pudo crear el usuario';
+        const message = error?.message || 'No se pudo crear el usuario';
+        if (/ya existe un usuario con ese correo|already.*registered|already.*exists|duplicate/i.test(message)) {
+          msg.style.color='#8a5a00';
+          msg.textContent='La cuenta ya existe. Se actualizó la lista de usuarios; no es necesario volver a crearla.';
+          if (typeof window.renderUsers === 'function') await window.renderUsers();
+        } else {
+          msg.style.color='#a61b1b';
+          msg.textContent = message;
+        }
       } finally {
         submit.disabled = false;
       }
