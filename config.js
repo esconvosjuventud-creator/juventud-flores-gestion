@@ -1,6 +1,6 @@
 window.JF_CONFIG = Object.freeze({
   appName: "JUVENTUD FLORES – GESTIÓN",
-  version: "6.0.4",
+  version: "7.0.0",
   timezone: "America/Montevideo",
   supabaseUrl: "https://yjpyszgxloerkmfgtuzd.supabase.co",
   supabasePublishableKey: "sb_publishable_ZyllPsNGdJhoCd7Vz82uSQ_C89X4p4k",
@@ -222,4 +222,39 @@ window.JF_CONFIG = Object.freeze({
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setup, { once:true });
   else setup();
+})();
+
+
+// ETAPA 7: carga de automatización institucional después de la aplicación base.
+(function loadStage7Extension(){
+  if (window.__JF_STAGE7_LOADER__) return;
+  window.__JF_STAGE7_LOADER__ = true;
+  const addScript=(src)=>new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.head.appendChild(s)});
+  window.addEventListener('load', async () => {
+    try {
+      if (!document.querySelector('link[data-jf-stage7]')) {
+        const link=document.createElement('link');
+        link.rel='stylesheet'; link.href='./stage7.css?v=7.0.0'; link.dataset.jfStage7='1';
+        document.head.appendChild(link);
+      }
+      const response=await fetch('./stage7.js.gz.b64?v=7.0.0',{cache:'no-store'});
+      if(!response.ok) throw new Error('No se pudo cargar Etapa 7');
+      const b64=(await response.text()).trim();
+      const compressed=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));
+      let source;
+      if('DecompressionStream' in window){
+        const ds=new DecompressionStream('gzip');
+        const stream=new Blob([compressed]).stream().pipeThrough(ds);
+        source=await new Response(stream).text();
+      }else{
+        if(!window.pako) await addScript('https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js');
+        source=new TextDecoder().decode(window.pako.ungzip(compressed));
+      }
+      const blobUrl=URL.createObjectURL(new Blob([source],{type:'text/javascript'}));
+      const script=document.createElement('script');script.src=blobUrl;script.dataset.jfStage7='1';
+      script.onload=()=>URL.revokeObjectURL(blobUrl);document.body.appendChild(script);
+    } catch (error) {
+      console.error('Etapa 7 no pudo cargarse',error);
+    }
+  }, { once:true });
 })();
