@@ -10,13 +10,37 @@
   const $ = id => document.getElementById(id);
   const esc = v => String(v ?? '').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[s]));
 
+  function lockPublicSignup(){
+    const signupTab = document.querySelector('[data-auth-tab="signup"]');
+    const loginTab = document.querySelector('[data-auth-tab="login"]');
+    const signupForm = $('signupForm');
+    const loginForm = $('loginForm');
+    const tabs = document.querySelector('.auth-tabs');
+    if (!signupTab || signupTab.dataset.jfDisabled === '1') return;
+
+    signupTab.dataset.jfDisabled = '1';
+    signupTab.style.display = 'none';
+    signupForm?.classList.add('hidden');
+    loginForm?.classList.remove('hidden');
+    loginTab?.classList.add('active');
+
+    if (tabs && !$('jfInternalAccessNote')) {
+      const note = document.createElement('p');
+      note.id = 'jfInternalAccessNote';
+      note.className = 'muted small';
+      note.style.margin = '10px 0 2px';
+      note.textContent = 'El acceso es interno. Las nuevas cuentas son creadas y habilitadas por un Administrador.';
+      tabs.insertAdjacentElement('afterend', note);
+    }
+  }
+
   function translateAuthMessage(){
     const node = $('authMessage');
     if (!node) return;
     const raw = (node.textContent || '').trim().toLowerCase();
     if (!raw) return;
     if (raw.includes('email rate limit exceeded') || raw.includes('over_email_send_rate_limit')) {
-      node.textContent = 'Se alcanzó el límite temporal de correos de Supabase. Si sos Administrador, ingresá al sistema y creá el usuario desde Configuración → Usuarios y roles.';
+      node.textContent = 'Se alcanzó el límite temporal de correos de Supabase. Ingresá con una cuenta Administrador y creá el usuario desde Configuración → Usuarios y roles.';
     } else if (raw.includes('email not confirmed')) {
       node.textContent = 'El correo todavía no está confirmado. Contactá a un Administrador para revisar o habilitar la cuenta.';
     } else if (raw.includes('invalid login credentials')) {
@@ -133,6 +157,7 @@
   }
 
   function scan(){
+    lockPublicSignup();
     watchAuthMessages();
     injectAdminCreator().catch(console.error);
   }
