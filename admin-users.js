@@ -99,7 +99,7 @@
       <form id="jfAdminUserForm" class="jf-admin-user-form hidden" autocomplete="off">
         <label class="full">Nombre y apellido<input id="jfNewUserName" required minlength="3" autocomplete="off"></label>
         <label>Correo<input id="jfNewUserEmail" type="email" required autocomplete="off"></label>
-        <label>Rol<select id="jfNewUserRole"><option value="equipo">Equipo</option><option value="consulta">Consulta</option></select></label>
+        <label>Rol<select id="jfNewUserRole"><option value="consulta">Consulta</option><option value="equipo">Equipo</option></select></label>
         <label class="full">Contraseña inicial<input id="jfNewUserPassword" type="password" required minlength="8" autocomplete="new-password"><span class="muted small">Mínimo 8 caracteres. No se guarda ni se muestra luego.</span></label>
         <div class="jf-admin-user-actions"><button id="jfCreateUserSubmit" class="primary-btn" type="submit">Crear y habilitar</button><button id="jfCancelCreateUser" class="secondary-btn" type="button">Cancelar</button></div>
         <p id="jfAdminUserMessage" class="jf-admin-user-message"></p>
