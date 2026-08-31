@@ -1,6 +1,6 @@
 window.JF_CONFIG = Object.freeze({
   appName: "JUVENTUD FLORES – GESTIÓN",
-  version: "6.0.3",
+  version: "6.0.4",
   timezone: "America/Montevideo",
   supabaseUrl: "https://yjpyszgxloerkmfgtuzd.supabase.co",
   supabasePublishableKey: "sb_publishable_ZyllPsNGdJhoCd7Vz82uSQ_C89X4p4k",
@@ -13,16 +13,11 @@ window.JF_CONFIG = Object.freeze({
   }
 });
 
-// Adaptador QR robusto para GitHub Pages.
-// La pantalla pública espera window.QRCode.toCanvas(...). Si el bundle "qrcode"
-// no queda disponible en el navegador, cargamos QRious y mantenemos la misma API.
 (function installQrRenderer(){
   let loadingPromise = null;
-
   function loadQRious(){
     if (window.QRious) return Promise.resolve(window.QRious);
     if (loadingPromise) return loadingPromise;
-
     loadingPromise = new Promise((resolve, reject) => {
       const script = document.createElement('script');
       script.src = 'https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js';
@@ -30,42 +25,25 @@ window.JF_CONFIG = Object.freeze({
       script.onerror = () => reject(new Error('No se pudo cargar el generador QR'));
       document.head.appendChild(script);
     });
-
     return loadingPromise;
   }
-
   async function toCanvas(canvas, value, options = {}){
     if (!canvas) throw new Error('No se encontró el canvas del QR');
     const QRious = await loadQRious();
-    new QRious({
-      element: canvas,
-      value: String(value || ''),
-      size: Number(options.width || 280),
-      padding: Number(options.margin || 2) * 4,
-      level: 'M'
-    });
+    new QRious({element: canvas,value: String(value || ''),size: Number(options.width || 280),padding: Number(options.margin || 2) * 4,level: 'M'});
     return canvas;
   }
-
   const existing = window.QRCode || {};
   existing.toCanvas = toCanvas;
   window.QRCode = existing;
 })();
 
-// Compatibilidad del lector QR con Safari/iPhone.
-// Safari puede no ofrecer BarcodeDetector aunque sí permita usar la cámara.
-// Este polyfill conserva la API usada por app.js y decodifica con jsQR.
 (function installBarcodeDetectorFallback(){
   if ('BarcodeDetector' in window) return;
-
-  let jsQrPromise = null;
-  let canvas = null;
-  let ctx = null;
-
+  let jsQrPromise = null, canvas = null, ctx = null;
   function loadJsQR(){
     if (window.jsQR) return Promise.resolve(window.jsQR);
     if (jsQrPromise) return jsQrPromise;
-
     jsQrPromise = new Promise((resolve, reject) => {
       const script = document.createElement('script');
       script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
@@ -74,28 +52,19 @@ window.JF_CONFIG = Object.freeze({
       script.onerror = () => reject(new Error('No se pudo cargar el lector QR'));
       document.head.appendChild(script);
     });
-
     return jsQrPromise;
   }
-
   class BarcodeDetectorFallback {
     constructor(){ loadJsQR().catch(() => {}); }
     static getSupportedFormats(){ return Promise.resolve(['qr_code']); }
-
     async detect(source){
       const jsQR = await loadJsQR();
       const width = source?.videoWidth || source?.naturalWidth || source?.width || 0;
       const height = source?.videoHeight || source?.naturalHeight || source?.height || 0;
       if (!width || !height || (source?.readyState !== undefined && source.readyState < 2)) return [];
-
-      if (!canvas) {
-        canvas = document.createElement('canvas');
-        ctx = canvas.getContext('2d', { willReadFrequently: true });
-      }
+      if (!canvas) { canvas = document.createElement('canvas'); ctx = canvas.getContext('2d', { willReadFrequently: true }); }
       if (!ctx) return [];
-
-      const maxWidth = 960;
-      const scale = Math.min(1, maxWidth / width);
+      const scale = Math.min(1, 960 / width);
       canvas.width = Math.max(1, Math.round(width * scale));
       canvas.height = Math.max(1, Math.round(height * scale));
       ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
@@ -104,22 +73,17 @@ window.JF_CONFIG = Object.freeze({
       return result?.data ? [{ rawValue: result.data }] : [];
     }
   }
-
   window.BarcodeDetector = BarcodeDetectorFallback;
   loadJsQR().catch(() => {});
 })();
 
-// Recuperación de contraseña para la pantalla de acceso.
-// Usa el flujo oficial de Supabase: resetPasswordForEmail -> PASSWORD_RECOVERY -> updateUser.
 (function installPasswordRecovery(){
   if (!window.supabase || !window.JF_CONFIG) return;
-
   const C = window.JF_CONFIG;
   const auth = window.supabase.createClient(C.supabaseUrl, C.supabasePublishableKey, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
   });
   let recoveryActive = /(?:^|[&#])type=recovery(?:&|$)/.test(location.hash);
-  let observer = null;
 
   function el(id){ return document.getElementById(id); }
   function setMessage(id, text, ok=false){
@@ -128,23 +92,34 @@ window.JF_CONFIG = Object.freeze({
     node.textContent = text || '';
     node.style.color = ok ? '#19703a' : '';
   }
-
+  function ensureRecoveryStyle(){
+    if (el('jfRecoveryStyle')) return;
+    const style = document.createElement('style');
+    style.id = 'jfRecoveryStyle';
+    style.textContent = `
+      html.jf-password-recovery #loading,
+      html.jf-password-recovery #pendingScreen,
+      html.jf-password-recovery #app,
+      html.jf-password-recovery #publicScreen,
+      html.jf-password-recovery .auth-tabs,
+      html.jf-password-recovery #loginForm,
+      html.jf-password-recovery #signupForm,
+      html.jf-password-recovery #recoveryRequestForm,
+      html.jf-password-recovery .public-links { display:none !important; }
+      html.jf-password-recovery #authScreen { display:flex !important; }
+      html.jf-password-recovery #recoveryUpdateForm { display:flex !important; }
+    `;
+    document.head.appendChild(style);
+  }
   function forceRecoveryScreen(){
     if (!recoveryActive) return;
-    ['loading','pendingScreen','app','publicScreen'].forEach(id => el(id)?.classList.add('hidden'));
-    el('authScreen')?.classList.remove('hidden');
-    document.querySelector('.auth-tabs')?.classList.add('hidden');
-    el('loginForm')?.classList.add('hidden');
-    el('signupForm')?.classList.add('hidden');
-    el('recoveryRequestForm')?.classList.add('hidden');
-    el('recoveryUpdateForm')?.classList.remove('hidden');
-    document.querySelector('.public-links')?.classList.add('hidden');
-    if (el('authMessage')) el('authMessage').textContent='';
+    ensureRecoveryStyle();
+    document.documentElement.classList.add('jf-password-recovery');
+    setTimeout(() => el('recoveryPassword')?.focus(), 50);
   }
-
   function showLogin(){
     recoveryActive = false;
-    observer?.disconnect();
+    document.documentElement.classList.remove('jf-password-recovery');
     document.querySelector('.auth-tabs')?.classList.remove('hidden');
     el('loginForm')?.classList.remove('hidden');
     el('signupForm')?.classList.add('hidden');
@@ -153,7 +128,6 @@ window.JF_CONFIG = Object.freeze({
     document.querySelector('.public-links')?.classList.remove('hidden');
     if (el('authMessage')) el('authMessage').textContent='';
   }
-
   function showRequest(){
     document.querySelector('.auth-tabs')?.classList.add('hidden');
     el('loginForm')?.classList.add('hidden');
@@ -161,97 +135,80 @@ window.JF_CONFIG = Object.freeze({
     el('recoveryUpdateForm')?.classList.add('hidden');
     el('recoveryRequestForm')?.classList.remove('hidden');
     document.querySelector('.public-links')?.classList.add('hidden');
-    const loginEmail = el('loginEmail');
     const recoveryEmail = el('recoveryEmail');
-    if (recoveryEmail && loginEmail?.value) recoveryEmail.value = loginEmail.value;
+    if (recoveryEmail && el('loginEmail')?.value) recoveryEmail.value = el('loginEmail').value;
     setMessage('recoveryRequestMessage','');
     recoveryEmail?.focus();
   }
-
   function setup(){
     const loginForm = el('loginForm');
     const authCard = loginForm?.closest('.auth-card');
-    if (!loginForm || !authCard || el('forgotPasswordBtn')) {
-      if (recoveryActive) forceRecoveryScreen();
-      return;
+    if (!loginForm || !authCard) return;
+    if (!el('forgotPasswordBtn')) {
+      const forgot = document.createElement('button');
+      forgot.id = 'forgotPasswordBtn';
+      forgot.type = 'button';
+      forgot.className = 'link-btn';
+      forgot.textContent = '¿Olvidé mi contraseña?';
+      forgot.style.marginTop = '4px';
+      forgot.onclick = showRequest;
+      loginForm.appendChild(forgot);
+
+      const requestForm = document.createElement('form');
+      requestForm.id = 'recoveryRequestForm';
+      requestForm.className = 'stack hidden';
+      requestForm.innerHTML = `
+        <p class="eyebrow">RECUPERAR ACCESO</p>
+        <h2>Restablecer contraseña</h2>
+        <p class="muted small">Ingresá el correo de tu cuenta. Te enviaremos un enlace para crear una contraseña nueva.</p>
+        <label>Correo<input id="recoveryEmail" type="email" autocomplete="email" required></label>
+        <button class="primary-btn" type="submit">Enviar enlace de recuperación</button>
+        <button id="recoveryCancelBtn" class="secondary-btn" type="button">Volver a ingresar</button>
+        <p id="recoveryRequestMessage" class="message"></p>`;
+      loginForm.insertAdjacentElement('afterend', requestForm);
+
+      const updateForm = document.createElement('form');
+      updateForm.id = 'recoveryUpdateForm';
+      updateForm.className = 'stack hidden';
+      updateForm.innerHTML = `
+        <p class="eyebrow">NUEVA CONTRASEÑA</p>
+        <h2>Elegí una contraseña nueva</h2>
+        <p class="muted small">Debe tener al menos 8 caracteres.</p>
+        <label>Nueva contraseña<input id="recoveryPassword" type="password" minlength="8" autocomplete="new-password" required></label>
+        <label>Repetir contraseña<input id="recoveryPassword2" type="password" minlength="8" autocomplete="new-password" required></label>
+        <button class="primary-btn" type="submit">Guardar nueva contraseña</button>
+        <p id="recoveryUpdateMessage" class="message"></p>`;
+      requestForm.insertAdjacentElement('afterend', updateForm);
+
+      el('recoveryCancelBtn').onclick = showLogin;
+      requestForm.onsubmit = async (event) => {
+        event.preventDefault();
+        const email = String(el('recoveryEmail')?.value || '').trim();
+        if (!email) return;
+        setMessage('recoveryRequestMessage','Enviando…');
+        const redirectTo = `${location.origin}${location.pathname}`;
+        const { error } = await auth.auth.resetPasswordForEmail(email, { redirectTo });
+        if (error) return setMessage('recoveryRequestMessage', error.message);
+        setMessage('recoveryRequestMessage','Si el correo pertenece a una cuenta, recibirás un enlace para restablecer la contraseña. Revisá también Spam.', true);
+      };
+      updateForm.onsubmit = async (event) => {
+        event.preventDefault();
+        const p1 = String(el('recoveryPassword')?.value || '');
+        const p2 = String(el('recoveryPassword2')?.value || '');
+        if (p1.length < 8) return setMessage('recoveryUpdateMessage','La contraseña debe tener al menos 8 caracteres.');
+        if (p1 !== p2) return setMessage('recoveryUpdateMessage','Las contraseñas no coinciden.');
+        setMessage('recoveryUpdateMessage','Guardando…');
+        const { data:{ session } } = await auth.auth.getSession();
+        if (!session) return setMessage('recoveryUpdateMessage','El enlace venció o ya fue utilizado. Solicitá uno nuevo.');
+        const { error } = await auth.auth.updateUser({ password: p1 });
+        if (error) return setMessage('recoveryUpdateMessage', error.message);
+        setMessage('recoveryUpdateMessage','Contraseña actualizada correctamente. Ya podés volver a ingresar.', true);
+        await auth.auth.signOut();
+        recoveryActive = false;
+        document.documentElement.classList.remove('jf-password-recovery');
+        setTimeout(() => location.replace(`${location.origin}${location.pathname}#/login`), 1200);
+      };
     }
-
-    const forgot = document.createElement('button');
-    forgot.id = 'forgotPasswordBtn';
-    forgot.type = 'button';
-    forgot.className = 'link-btn';
-    forgot.textContent = '¿Olvidé mi contraseña?';
-    forgot.style.marginTop = '4px';
-    forgot.onclick = showRequest;
-    loginForm.appendChild(forgot);
-
-    const requestForm = document.createElement('form');
-    requestForm.id = 'recoveryRequestForm';
-    requestForm.className = 'stack hidden';
-    requestForm.innerHTML = `
-      <p class="eyebrow">RECUPERAR ACCESO</p>
-      <h2>Restablecer contraseña</h2>
-      <p class="muted small">Ingresá el correo de tu cuenta. Te enviaremos un enlace para crear una contraseña nueva.</p>
-      <label>Correo<input id="recoveryEmail" type="email" autocomplete="email" required></label>
-      <button class="primary-btn" type="submit">Enviar enlace de recuperación</button>
-      <button id="recoveryCancelBtn" class="secondary-btn" type="button">Volver a ingresar</button>
-      <p id="recoveryRequestMessage" class="message"></p>`;
-    loginForm.insertAdjacentElement('afterend', requestForm);
-
-    const updateForm = document.createElement('form');
-    updateForm.id = 'recoveryUpdateForm';
-    updateForm.className = 'stack hidden';
-    updateForm.innerHTML = `
-      <p class="eyebrow">NUEVA CONTRASEÑA</p>
-      <h2>Elegí una contraseña nueva</h2>
-      <p class="muted small">Debe tener al menos 8 caracteres.</p>
-      <label>Nueva contraseña<input id="recoveryPassword" type="password" minlength="8" autocomplete="new-password" required></label>
-      <label>Repetir contraseña<input id="recoveryPassword2" type="password" minlength="8" autocomplete="new-password" required></label>
-      <button class="primary-btn" type="submit">Guardar nueva contraseña</button>
-      <p id="recoveryUpdateMessage" class="message"></p>`;
-    requestForm.insertAdjacentElement('afterend', updateForm);
-
-    el('recoveryCancelBtn').onclick = showLogin;
-
-    requestForm.onsubmit = async (event) => {
-      event.preventDefault();
-      const email = String(el('recoveryEmail')?.value || '').trim();
-      if (!email) return;
-      setMessage('recoveryRequestMessage','Enviando…');
-      const redirectTo = `${location.origin}${location.pathname}`;
-      const { error } = await auth.auth.resetPasswordForEmail(email, { redirectTo });
-      if (error) return setMessage('recoveryRequestMessage', error.message);
-      setMessage('recoveryRequestMessage','Si el correo pertenece a una cuenta, recibirás un enlace para restablecer la contraseña. Revisá también Spam.', true);
-    };
-
-    updateForm.onsubmit = async (event) => {
-      event.preventDefault();
-      const p1 = String(el('recoveryPassword')?.value || '');
-      const p2 = String(el('recoveryPassword2')?.value || '');
-      if (p1.length < 8) return setMessage('recoveryUpdateMessage','La contraseña debe tener al menos 8 caracteres.');
-      if (p1 !== p2) return setMessage('recoveryUpdateMessage','Las contraseñas no coinciden.');
-      setMessage('recoveryUpdateMessage','Guardando…');
-      const { data:{ session } } = await auth.auth.getSession();
-      if (!session) return setMessage('recoveryUpdateMessage','El enlace venció o ya fue utilizado. Solicitá uno nuevo.');
-      const { error } = await auth.auth.updateUser({ password: p1 });
-      if (error) return setMessage('recoveryUpdateMessage', error.message);
-      setMessage('recoveryUpdateMessage','Contraseña actualizada correctamente. Ya podés volver a ingresar.', true);
-      await auth.auth.signOut();
-      recoveryActive = false;
-      observer?.disconnect();
-      setTimeout(() => location.replace(`${location.origin}${location.pathname}#/login`), 1200);
-    };
-
-    document.querySelectorAll('[data-auth-tab]').forEach(button => {
-      button.addEventListener('click', () => {
-        if (recoveryActive) return;
-        requestForm.classList.add('hidden');
-        updateForm.classList.add('hidden');
-        document.querySelector('.auth-tabs')?.classList.remove('hidden');
-        document.querySelector('.public-links')?.classList.remove('hidden');
-      });
-    });
-
     if (recoveryActive) forceRecoveryScreen();
   }
 
@@ -260,9 +217,6 @@ window.JF_CONFIG = Object.freeze({
       recoveryActive = true;
       setup();
       forceRecoveryScreen();
-      observer?.disconnect();
-      observer = new MutationObserver(forceRecoveryScreen);
-      observer.observe(document.documentElement, { attributes:true, subtree:true, attributeFilter:['class'] });
     }
   });
 
