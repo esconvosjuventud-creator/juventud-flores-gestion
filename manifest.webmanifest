@@ -1,0 +1,25 @@
+{
+  "name": "Juventud Flores – Gestión",
+  "short_name": "Juventud Flores",
+  "description": "Sistema de gestión de la Oficina de la Juventud de la Intendencia Departamental de Flores",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#74105c",
+  "lang": "es-UY",
+  "icons": [
+    {
+      "src": "./assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

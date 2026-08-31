@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="es-UY">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#74105c">
+  <meta name="description" content="Sistema de gestión de la Oficina de la Juventud de la Intendencia Departamental de Flores">
+  <title>Juventud Flores – Gestión</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="icon" href="./assets/icon-192.png">
+</head>
+<body>
+  <div id="loading" class="screen center-screen">
+    <img src="./assets/logo-juventud-flores.png" class="loading-logo" alt="Oficina de la Juventud">
+    <div class="spinner"></div>
+    <p>Conectando con Juventud Flores…</p>
+  </div>
+
+  <section id="authScreen" class="screen center-screen hidden">
+    <div class="auth-card">
+      <img src="./assets/logo-juventud-flores.png" class="auth-logo" alt="#Es Con Vos">
+      <p class="eyebrow">SISTEMA INTERNO</p>
+      <h1>JUVENTUD FLORES – GESTIÓN</h1>
+      <p class="muted">Oficina de la Juventud · Intendencia Departamental de Flores</p>
+      <div class="auth-tabs">
+        <button class="active" data-auth-tab="login">Ingresar</button>
+        <button data-auth-tab="signup">Crear usuario</button>
+      </div>
+      <form id="loginForm" class="stack">
+        <label>Correo<input id="loginEmail" type="email" autocomplete="username" required></label>
+        <label>Contraseña<input id="loginPassword" type="password" autocomplete="current-password" required></label>
+        <button class="primary-btn" type="submit">Ingresar</button>
+      </form>
+      <form id="signupForm" class="stack hidden">
+        <label>Nombre y apellido<input id="signupName" required></label>
+        <label>Correo<input id="signupEmail" type="email" autocomplete="email" required></label>
+        <label>Contraseña<input id="signupPassword" type="password" minlength="8" required></label>
+        <button class="primary-btn" type="submit">Crear usuario</button>
+        <p class="muted small">Los usuarios nuevos quedan pendientes de activación por un Administrador.</p>
+      </form>
+      <p id="authMessage" class="message"></p>
+      <div class="public-links">
+        <a href="#/agenda">Agenda Joven</a>
+        <a href="#/oportunidades">Oportunidades</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="pendingScreen" class="screen center-screen hidden">
+    <div class="auth-card">
+      <img src="./assets/logo-juventud-flores.png" class="auth-logo" alt="#Es Con Vos">
+      <p class="eyebrow">USUARIO REGISTRADO</p>
+      <h2>Acceso pendiente de activación</h2>
+      <p>Tu usuario fue creado correctamente, pero todavía no tiene acceso al sistema interno.</p>
+      <p class="muted">Un Administrador debe habilitarlo desde Configuración → Usuarios.</p>
+      <div id="firstAdminBox" class="setup-box">
+        <h3>¿Es la primera instalación?</h3>
+        <p class="muted">Ingresá el código de instalación de un solo uso entregado junto con la Etapa 6.</p>
+        <input id="setupCode" placeholder="Código de instalación">
+        <button id="bootstrapAdminBtn" class="primary-btn">Activar primer Administrador</button>
+      </div>
+      <button id="pendingLogout" class="secondary-btn">Cerrar sesión</button>
+    </div>
+  </section>
+
+  <div id="app" class="app hidden">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <img src="./assets/logo-juventud-flores.png" alt="#Es Con Vos">
+        <strong>JUVENTUD FLORES</strong>
+        <span>Gestión en Supabase</span>
+      </div>
+      <nav id="mainNav">
+        <button class="active" data-view="dashboard">🏠 Mi día</button>
+        <button data-view="tasks">✅ Tareas</button>
+        <button data-view="calendar">📅 Calendario</button>
+        <button data-view="events">🎪 Eventos</button>
+        <button data-view="meetings">🤝 Reuniones</button>
+        <button data-view="projects">📂 Proyectos</button>
+        <button data-view="contacts">👥 Contactos</button>
+        <button data-view="institutions">🏢 Instituciones</button>
+        <button data-view="notes">📄 Notas y solicitudes</button>
+        <button data-view="participation">🧑‍🤝‍🧑 Participación</button>
+        <button data-view="opportunities">🎓 Oportunidades</button>
+        <button data-view="checkin">📷 Control QR</button>
+        <button data-view="reports">📊 Informes</button>
+        <button data-view="settings">⚙️ Configuración</button>
+      </nav>
+      <div class="userbox">
+        <strong id="currentUserName"></strong>
+        <span id="currentUserRole"></span>
+        <button id="logoutBtn" class="link-btn">Cerrar sesión</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button id="menuBtn" class="icon-btn mobile-only">☰</button>
+        <div class="search"><span>⌕</span><input id="globalSearch" placeholder="¿Qué estás buscando?"></div>
+        <a class="secondary-btn public-shortcut" href="#/agenda">Agenda pública</a>
+        <button id="notifBtn" class="icon-btn notif-btn">🔔<span id="notifCount" class="notif-count hidden">0</span></button>
+        <button id="quickAddBtn" class="primary-btn">＋ Agregar</button>
+      </header>
+
+      <section id="view-dashboard" class="view active">
+        <div class="hero">
+          <div><p class="eyebrow">OFICINA DE LA JUVENTUD</p><h1>Buen día 👋</h1><strong id="todayLabel"></strong><p class="muted">Acá tenés un resumen de todo lo que necesita atención.</p></div>
+          <img src="./assets/logo-juventud-flores.png" alt="Logo institucional">
+        </div>
+        <div id="dashboardStats" class="stats"></div>
+        <div class="grid two">
+          <article class="card"><p class="eyebrow">AGENDA</p><h2>Para hoy</h2><div id="todayItems"></div></article>
+          <article class="card"><p class="eyebrow">PRIORIDAD</p><h2>Pendientes importantes</h2><div id="priorityItems"></div></article>
+          <article class="card span2"><p class="eyebrow">PRÓXIMAMENTE</p><h2>Próximos eventos</h2><div id="upcomingItems"></div></article>
+        </div>
+      </section>
+
+      <section id="view-tasks" class="view">
+        <div class="page-head"><div><p class="eyebrow">CHECKLIST JUVENTUD</p><h1>Tareas</h1></div><button class="primary-btn" data-add="tasks">＋ Nueva tarea</button></div>
+        <div class="filters"><select id="taskStatusFilter"><option value="">Todos los estados</option><option>Pendiente</option><option>En proceso</option><option>Esperando respuesta</option><option>Agendada</option><option>Confirmada</option><option>Realizada</option><option>Cancelada</option><option>Postergada</option></select><select id="taskPriorityFilter"><option value="">Todas las prioridades</option><option>Urgente</option><option>Alta</option><option>Media</option><option>Baja</option></select></div>
+        <div id="tasksList" class="rows"></div>
+      </section>
+
+      <section id="view-calendar" class="view">
+        <div class="page-head"><div><p class="eyebrow">AGENDA</p><h1>Calendario</h1></div><div class="month-nav"><button id="prevMonth" class="secondary-btn">←</button><strong id="monthTitle"></strong><button id="nextMonth" class="secondary-btn">→</button></div></div>
+        <div id="calendarGrid" class="calendar"></div>
+      </section>
+
+      <section id="view-events" class="view">
+        <div class="page-head"><div><p class="eyebrow">PLANIFICACIÓN</p><h1>Eventos y actividades</h1></div><button class="primary-btn" data-add="events">＋ Nuevo evento</button></div>
+        <div id="eventsList" class="cards"></div>
+      </section>
+
+      <section id="view-meetings" class="view">
+        <div class="page-head"><div><p class="eyebrow">COORDINACIÓN</p><h1>Reuniones</h1></div><button class="primary-btn" data-add="meetings">＋ Nueva reunión</button></div>
+        <div id="meetingsList" class="cards"></div>
+      </section>
+
+      <section id="view-projects" class="view">
+        <div class="page-head"><div><p class="eyebrow">GESTIÓN</p><h1>Proyectos</h1></div><button class="primary-btn" data-add="projects">＋ Nuevo proyecto</button></div>
+        <div id="projectsList" class="cards"></div>
+      </section>
+
+      <section id="view-contacts" class="view">
+        <div class="page-head"><div><p class="eyebrow">VÍNCULOS</p><h1>Contactos</h1></div><button class="primary-btn" data-add="contacts">＋ Nuevo contacto</button></div>
+        <div id="contactsList" class="cards"></div>
+      </section>
+
+      <section id="view-institutions" class="view">
+        <div class="page-head"><div><p class="eyebrow">RED</p><h1>Instituciones</h1></div><button class="primary-btn" data-add="institutions">＋ Nueva institución</button></div>
+        <div id="institutionsList" class="cards"></div>
+      </section>
+
+      <section id="view-notes" class="view">
+        <div class="page-head"><div><p class="eyebrow">GESTIONES</p><h1>Notas y solicitudes</h1></div><button class="primary-btn" data-add="notes">＋ Nueva nota</button></div>
+        <div id="notesList" class="cards"></div>
+      </section>
+
+      <section id="view-participation" class="view">
+        <div class="page-head"><div><p class="eyebrow">ALCANCE</p><h1>Participación</h1></div><button class="primary-btn" data-add="participation_records">＋ Registrar participación</button></div>
+        <div id="participationList" class="cards"></div>
+      </section>
+
+      <section id="view-opportunities" class="view">
+        <div class="page-head"><div><p class="eyebrow">PORTAL JOVEN</p><h1>Oportunidades</h1></div><button class="primary-btn" data-add="opportunities">＋ Nueva oportunidad</button></div>
+        <div class="actions"><a class="secondary-btn" href="#/oportunidades">Abrir tablero público</a></div>
+        <div id="opportunitiesList" class="cards space-top"></div>
+      </section>
+
+      <section id="view-checkin" class="view">
+        <div class="page-head"><div><p class="eyebrow">ASISTENCIA</p><h1>Control QR</h1><p class="muted">Escaneá el QR o pegá el token.</p></div></div>
+        <div class="grid two">
+          <article class="card"><h2>Cámara</h2><video id="qrVideo" autoplay playsinline class="qr-video"></video><div class="actions"><button id="startScanner" class="primary-btn">Iniciar cámara</button><button id="stopScanner" class="secondary-btn">Detener</button></div><p id="scannerSupport" class="muted small"></p></article>
+          <article class="card"><h2>Ingreso manual</h2><input id="manualToken" class="full-input" placeholder="Token o URL del QR"><button id="manualCheckin" class="primary-btn space-top">Registrar asistencia</button><div id="checkinResult" class="space-top"></div></article>
+        </div>
+      </section>
+
+      <section id="view-reports" class="view">
+        <div class="page-head"><div><p class="eyebrow">RESULTADOS</p><h1>Informes y exportaciones</h1></div></div>
+        <div class="grid two">
+          <article class="card"><h2>Informe de gestión</h2><p class="muted">Generación local en el navegador. Los datos permanecen en Supabase.</p><div class="actions"><button id="exportPdfBtn" class="primary-btn">Descargar PDF</button><button id="exportExcelBtn" class="secondary-btn">Exportar Excel</button></div></article>
+          <article class="card"><h2>Memoria anual</h2><label>Año<input id="memoryYear" type="number" value="2026"></label><label>Introducción<textarea id="memoryIntro" rows="3"></textarea></label><label>Principales logros<textarea id="memoryHighlights" rows="3"></textarea></label><label>Desafíos<textarea id="memoryChallenges" rows="3"></textarea></label><label>Prioridades próximo año<textarea id="memoryPriorities" rows="3"></textarea></label><div class="actions"><button id="saveMemory" class="secondary-btn">Guardar</button><button id="memoryPdf" class="primary-btn">PDF anual</button></div></article>
+        </div>
+      </section>
+
+      <section id="view-settings" class="view">
+        <div class="page-head"><div><p class="eyebrow">SISTEMA</p><h1>Configuración</h1></div></div>
+        <div class="grid two">
+          <article class="card"><p class="eyebrow">SUPABASE</p><h2>Estado</h2><p><strong>Proyecto:</strong> JUVENTUD FLORES – GESTIÓN</p><p class="muted" id="supabaseStatus"></p></article>
+          <article class="card"><p class="eyebrow">GOOGLE</p><h2>Calendar · Drive · Gmail</h2><p id="googleStatus" class="muted">Consultando…</p><div class="actions"><button id="googleConnectBtn" class="primary-btn">Conectar Google</button><button id="googleTestEmail" class="secondary-btn">Enviar email de prueba</button></div></article>
+          <article class="card span2" id="usersCard"><p class="eyebrow">SEGURIDAD</p><h2>Usuarios y roles</h2><p class="muted">Los usuarios nuevos quedan inactivos hasta ser autorizados.</p><div id="usersList"></div></article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <section id="publicScreen" class="public-screen hidden">
+    <header class="public-head">
+      <img src="./assets/logo-juventud-flores.png" alt="#Es Con Vos">
+      <nav><a href="#/agenda">Agenda Joven</a><a href="#/oportunidades">Oportunidades</a><a href="#/login">Gestión interna</a></nav>
+    </header>
+    <main id="publicContent" class="public-wrap"></main>
+  </section>
+
+  <aside id="notificationDrawer" class="drawer">
+    <div class="drawer-head"><div><p class="eyebrow">AVISOS</p><h2>Notificaciones</h2></div><button id="closeDrawer" class="icon-btn">✕</button></div>
+    <button id="readAllBtn" class="secondary-btn">Marcar todas como leídas</button>
+    <div id="notificationsList" class="rows space-top"></div>
+  </aside>
+
+  <div id="backdrop" class="backdrop"></div>
+  <div id="modal" class="modal">
+    <div class="modal-head"><div><p id="modalEyebrow" class="eyebrow"></p><h2 id="modalTitle"></h2></div><button id="closeModal" class="icon-btn">✕</button></div>
+    <form id="entityForm" class="form-grid"></form>
+  </div>
+
+  <div id="detailBackdrop" class="backdrop"></div>
+  <div id="detailModal" class="modal detail-modal">
+    <div class="modal-head"><div><p id="detailEyebrow" class="eyebrow"></p><h2 id="detailTitle"></h2></div><button id="closeDetail" class="icon-btn">✕</button></div>
+    <div id="detailContent"></div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="./config.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
