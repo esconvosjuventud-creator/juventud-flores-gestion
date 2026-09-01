@@ -1,7 +1,7 @@
 {
-  "name": "Juventud Flores – Gestión",
-  "short_name": "Juventud Flores",
-  "description": "Sistema de gestión de la Oficina de la Juventud de la Intendencia Departamental de Flores",
+  "name": "Soraya – Gestión de Juventud",
+  "short_name": "Soraya",
+  "description": "Soraya · Sistema de gestión de la Oficina de la Juventud de la Intendencia Departamental de Flores",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
