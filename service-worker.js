@@ -1,4 +1,4 @@
-const CACHE='jf-ui-professional-v2';
+const CACHE='jf-ui-professional-v2-1';
 const STATIC=['./','./index.html','./styles.css','./stage7.css','./stage7.js.gz.b64','./stage8.css','./stage8.js.gz.b64','./stage8-1.css','./stage8-1.js','./stage8-2.css','./stage8-2.js','./stage8-3.css','./stage8-3.js','./stage8-4.css','./stage8-4.js','./stage8-5.css','./stage8-5.js','./stage8-6.css','./stage8-6.js','./ui-professional.css','./ui-professional.js','./app.js','./config.js','./admin-users.js','./manifest.webmanifest','./assets/logo-juventud-flores.png','./assets/icon-192.png','./assets/icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(STATIC)));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x)))));self.clients.claim()});
