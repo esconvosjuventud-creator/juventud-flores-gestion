@@ -1,190 +1,23 @@
-(function installAdminUserManagement(){
-  if (window.__JF_ADMIN_USERS__) return;
-  window.__JF_ADMIN_USERS__ = true;
+(function installAdminAndExtensions(){
+  if(window.__JF_ADMIN_EXTENSIONS__) return;
+  window.__JF_ADMIN_EXTENSIONS__=true;
+  const C=window.JF_CONFIG;
+  if(!window.supabase||!C) return;
+  const client=window.supabase.createClient(C.supabaseUrl,C.supabasePublishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+  const $=id=>document.getElementById(id);
+  const esc=v=>String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[s]));
 
-  const C = window.JF_CONFIG;
-  if (!window.supabase || !C) return;
-  const client = window.supabase.createClient(C.supabaseUrl, C.supabasePublishableKey, {
-    auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
-  });
-  const $ = id => document.getElementById(id);
-  const esc = v => String(v ?? '').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[s]));
+  function lockPublicSignup(){const signupTab=document.querySelector('[data-auth-tab="signup"]'),loginTab=document.querySelector('[data-auth-tab="login"]'),signupForm=$('signupForm'),loginForm=$('loginForm'),tabs=document.querySelector('.auth-tabs');if(!signupTab||signupTab.dataset.jfDisabled==='1')return;signupTab.dataset.jfDisabled='1';signupTab.style.display='none';signupForm?.classList.add('hidden');loginForm?.classList.remove('hidden');loginTab?.classList.add('active');if(tabs&&!$('jfInternalAccessNote')){const note=document.createElement('p');note.id='jfInternalAccessNote';note.className='muted small';note.style.margin='10px 0 2px';note.textContent='El acceso es interno. Las nuevas cuentas son creadas y habilitadas por un Administrador.';tabs.insertAdjacentElement('afterend',note)}}
+  function translateAuthMessage(){const node=$('authMessage');if(!node)return;const raw=(node.textContent||'').trim().toLowerCase();if(!raw)return;if(raw.includes('email rate limit exceeded')||raw.includes('over_email_send_rate_limit'))node.textContent='Se alcanzó el límite temporal de correos. Las cuentas internas deben crearse desde Configuración → Usuarios y roles.';else if(raw.includes('email not confirmed'))node.textContent='El correo todavía no está confirmado. Contactá a un Administrador.';else if(raw.includes('invalid login credentials'))node.textContent='Correo o contraseña incorrectos.'}
+  function watchAuth(){const node=$('authMessage');if(!node||node.dataset.jfTranslated)return;node.dataset.jfTranslated='1';new MutationObserver(translateAuthMessage).observe(node,{childList:true,subtree:true,characterData:true});translateAuthMessage()}
+  async function adminProfile(){const{data:{session}}=await client.auth.getSession();if(!session?.user)return null;const{data}=await client.from('profiles').select('id,role,active,full_name').eq('id',session.user.id).maybeSingle();return data?.active&&data?.role==='admin'?data:null}
+  function styles(){if($('jfAdminUsersStyle'))return;const s=document.createElement('style');s.id='jfAdminUsersStyle';s.textContent='.jf-admin-create{border:1px solid rgba(116,16,92,.14);border-radius:16px;padding:16px;margin:14px 0 20px;background:rgba(116,16,92,.035)}.jf-admin-create-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.jf-admin-user-form{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}.jf-admin-user-form label{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:.92rem}.jf-admin-user-form input,.jf-admin-user-form select{width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #d8d8df;border-radius:10px;background:#fff;font:inherit}.jf-admin-user-form .full{grid-column:1/-1}.jf-admin-user-actions{grid-column:1/-1;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.jf-admin-user-message{grid-column:1/-1;margin:0;font-size:.9rem}@media(max-width:700px){.jf-admin-user-form{grid-template-columns:1fr}.jf-admin-user-form .full,.jf-admin-user-actions,.jf-admin-user-message{grid-column:1}}';document.head.appendChild(s)}
+  async function injectCreator(){const card=$('usersCard');if(!card||$('jfAdminCreateBox'))return;const p=await adminProfile();if(!p)return;styles();const box=document.createElement('div');box.id='jfAdminCreateBox';box.className='jf-admin-create';box.innerHTML='<div class="jf-admin-create-head"><div><p class="eyebrow">ALTA INTERNA</p><h3 style="margin:0">Crear usuario</h3><p class="muted small" style="margin:.35rem 0 0">Creación directa por Administrador, sin correo de confirmación.</p></div><button id="jfToggleCreateUser" class="primary-btn" type="button">＋ Crear usuario</button></div><form id="jfAdminUserForm" class="jf-admin-user-form hidden" autocomplete="off"><label class="full">Nombre y apellido<input id="jfNewUserName" required minlength="3"></label><label>Correo<input id="jfNewUserEmail" type="email" required></label><label>Rol<select id="jfNewUserRole"><option value="consulta">Consulta</option><option value="equipo">Equipo</option></select></label><label class="full">Contraseña inicial<input id="jfNewUserPassword" type="password" required minlength="8" autocomplete="new-password"><span class="muted small">Mínimo 8 caracteres.</span></label><div class="jf-admin-user-actions"><button id="jfCreateUserSubmit" class="primary-btn">Crear y habilitar</button><button id="jfCancelCreateUser" class="secondary-btn" type="button">Cancelar</button></div><p id="jfAdminUserMessage" class="jf-admin-user-message"></p></form>';card.insertBefore(box,$('usersList')||null);const form=$('jfAdminUserForm'),toggle=$('jfToggleCreateUser'),cancel=$('jfCancelCreateUser'),msg=$('jfAdminUserMessage'),submit=$('jfCreateUserSubmit');const show=on=>{form.classList.toggle('hidden',!on);toggle.classList.toggle('hidden',on);if(on)$('jfNewUserName')?.focus()};toggle.onclick=()=>show(true);cancel.onclick=()=>{form.reset();msg.textContent='';show(false)};form.onsubmit=async e=>{e.preventDefault();msg.style.color='';msg.textContent='Creando usuario…';submit.disabled=true;try{const body={full_name:$('jfNewUserName').value.trim(),email:$('jfNewUserEmail').value.trim(),password:$('jfNewUserPassword').value,role:$('jfNewUserRole').value};const{data,error}=await client.functions.invoke('admin-create-user',{body});if(error){let detail=error.message||'No se pudo crear el usuario';try{if(error.context&&typeof error.context.json==='function'){const p=await error.context.json();if(p?.error)detail=p.error}}catch{}throw new Error(detail)}if(!data?.ok)throw new Error(data?.error||'No se pudo crear el usuario');form.reset();msg.style.color='#19703a';msg.innerHTML='<strong>'+esc(data.user.full_name)+'</strong> fue creado y habilitado como '+(data.user.role==='equipo'?'Equipo':'Consulta')+'. Ya puede iniciar sesión.';if(typeof window.renderUsers==='function')await window.renderUsers();setTimeout(()=>show(false),2200)}catch(err){const text=err?.message||'No se pudo crear el usuario';if(/ya existe|already.*registered|already.*exists|duplicate/i.test(text)){msg.style.color='#8a5a00';msg.textContent='La cuenta ya existe. No es necesario volver a crearla.';if(typeof window.renderUsers==='function')await window.renderUsers()}else{msg.style.color='#a61b1b';msg.textContent=text}}finally{submit.disabled=false}}}
 
-  function lockPublicSignup(){
-    const signupTab = document.querySelector('[data-auth-tab="signup"]');
-    const loginTab = document.querySelector('[data-auth-tab="login"]');
-    const signupForm = $('signupForm');
-    const loginForm = $('loginForm');
-    const tabs = document.querySelector('.auth-tabs');
-    if (!signupTab || signupTab.dataset.jfDisabled === '1') return;
-
-    signupTab.dataset.jfDisabled = '1';
-    signupTab.style.display = 'none';
-    signupForm?.classList.add('hidden');
-    loginForm?.classList.remove('hidden');
-    loginTab?.classList.add('active');
-
-    if (tabs && !$('jfInternalAccessNote')) {
-      const note = document.createElement('p');
-      note.id = 'jfInternalAccessNote';
-      note.className = 'muted small';
-      note.style.margin = '10px 0 2px';
-      note.textContent = 'El acceso es interno. Las nuevas cuentas son creadas y habilitadas por un Administrador.';
-      tabs.insertAdjacentElement('afterend', note);
-    }
-  }
-
-  function translateAuthMessage(){
-    const node = $('authMessage');
-    if (!node) return;
-    const raw = (node.textContent || '').trim().toLowerCase();
-    if (!raw) return;
-    if (raw.includes('email rate limit exceeded') || raw.includes('over_email_send_rate_limit')) {
-      node.textContent = 'Se alcanzó el límite temporal de correos de Supabase. Ingresá con una cuenta Administrador y creá el usuario desde Configuración → Usuarios y roles.';
-    } else if (raw.includes('email not confirmed')) {
-      node.textContent = 'El correo todavía no está confirmado. Contactá a un Administrador para revisar o habilitar la cuenta.';
-    } else if (raw.includes('invalid login credentials')) {
-      node.textContent = 'Correo o contraseña incorrectos.';
-    }
-  }
-
-  function watchAuthMessages(){
-    const node = $('authMessage');
-    if (!node || node.dataset.jfTranslated) return;
-    node.dataset.jfTranslated = '1';
-    new MutationObserver(translateAuthMessage).observe(node,{childList:true,subtree:true,characterData:true});
-    translateAuthMessage();
-  }
-
-  async function getAdminProfile(){
-    const {data:{session}} = await client.auth.getSession();
-    if (!session?.user) return null;
-    const {data} = await client.from('profiles').select('id,role,active,full_name').eq('id',session.user.id).maybeSingle();
-    return data?.active && data?.role === 'admin' ? data : null;
-  }
-
-  function ensureStyles(){
-    if ($('jfAdminUsersStyle')) return;
-    const style = document.createElement('style');
-    style.id = 'jfAdminUsersStyle';
-    style.textContent = `
-      .jf-admin-create{border:1px solid rgba(116,16,92,.14);border-radius:16px;padding:16px;margin:14px 0 20px;background:rgba(116,16,92,.035)}
-      .jf-admin-create-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-      .jf-admin-user-form{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
-      .jf-admin-user-form label{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:.92rem}
-      .jf-admin-user-form input,.jf-admin-user-form select{width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #d8d8df;border-radius:10px;background:#fff;font:inherit}
-      .jf-admin-user-form .full{grid-column:1/-1}
-      .jf-admin-user-actions{grid-column:1/-1;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-      .jf-admin-user-message{grid-column:1/-1;margin:0;font-size:.9rem}
-      @media(max-width:700px){.jf-admin-user-form{grid-template-columns:1fr}.jf-admin-user-form .full,.jf-admin-user-actions,.jf-admin-user-message{grid-column:1}}
-    `;
-    document.head.appendChild(style);
-  }
-
-  async function injectAdminCreator(){
-    const card = $('usersCard');
-    if (!card || $('jfAdminCreateBox')) return;
-    const profile = await getAdminProfile();
-    if (!profile) return;
-    ensureStyles();
-
-    const box = document.createElement('div');
-    box.id = 'jfAdminCreateBox';
-    box.className = 'jf-admin-create';
-    box.innerHTML = `
-      <div class="jf-admin-create-head">
-        <div><p class="eyebrow">ALTA INTERNA</p><h3 style="margin:0">Crear usuario</h3><p class="muted small" style="margin:.35rem 0 0">Creación directa por Administrador, sin correo de confirmación.</p></div>
-        <button id="jfToggleCreateUser" class="primary-btn" type="button">＋ Crear usuario</button>
-      </div>
-      <form id="jfAdminUserForm" class="jf-admin-user-form hidden" autocomplete="off">
-        <label class="full">Nombre y apellido<input id="jfNewUserName" required minlength="3" autocomplete="off"></label>
-        <label>Correo<input id="jfNewUserEmail" type="email" required autocomplete="off"></label>
-        <label>Rol<select id="jfNewUserRole"><option value="consulta">Consulta</option><option value="equipo">Equipo</option></select></label>
-        <label class="full">Contraseña inicial<input id="jfNewUserPassword" type="password" required minlength="8" autocomplete="new-password"><span class="muted small">Mínimo 8 caracteres. No se guarda ni se muestra luego.</span></label>
-        <div class="jf-admin-user-actions"><button id="jfCreateUserSubmit" class="primary-btn" type="submit">Crear y habilitar</button><button id="jfCancelCreateUser" class="secondary-btn" type="button">Cancelar</button></div>
-        <p id="jfAdminUserMessage" class="jf-admin-user-message"></p>
-      </form>`;
-
-    const usersList = $('usersList');
-    card.insertBefore(box, usersList || null);
-
-    const form = $('jfAdminUserForm');
-    const toggle = $('jfToggleCreateUser');
-    const cancel = $('jfCancelCreateUser');
-    const msg = $('jfAdminUserMessage');
-    const submit = $('jfCreateUserSubmit');
-    const show = on => { form.classList.toggle('hidden', !on); toggle.classList.toggle('hidden', on); if(on) $('jfNewUserName')?.focus(); };
-    toggle.onclick = () => show(true);
-    cancel.onclick = () => { form.reset(); msg.textContent=''; show(false); };
-
-    form.onsubmit = async event => {
-      event.preventDefault();
-      msg.style.color='';
-      msg.textContent='Creando usuario…';
-      submit.disabled = true;
-      try {
-        const body = {
-          full_name: $('jfNewUserName').value.trim(),
-          email: $('jfNewUserEmail').value.trim(),
-          password: $('jfNewUserPassword').value,
-          role: $('jfNewUserRole').value
-        };
-        const {data,error} = await client.functions.invoke('admin-create-user',{body});
-        if (error) {
-          let detail = error.message || 'No se pudo crear el usuario';
-          try {
-            const context = error.context;
-            if (context && typeof context.json === 'function') {
-              const payload = await context.json();
-              if (payload?.error) detail = payload.error;
-            }
-          } catch (_) {}
-          throw new Error(detail);
-        }
-        if (!data?.ok) throw new Error(data?.error || 'No se pudo crear el usuario');
-        form.reset();
-        msg.style.color='#19703a';
-        msg.innerHTML = `<strong>${esc(data.user.full_name)}</strong> fue creado y habilitado como ${data.user.role === 'equipo' ? 'Equipo' : 'Consulta'}. Ya puede iniciar sesión.`;
-        if (typeof window.renderUsers === 'function') await window.renderUsers();
-        setTimeout(() => show(false), 2200);
-      } catch (error) {
-        const message = error?.message || 'No se pudo crear el usuario';
-        if (/ya existe un usuario con ese correo|already.*registered|already.*exists|duplicate/i.test(message)) {
-          msg.style.color='#8a5a00';
-          msg.textContent='La cuenta ya existe. Se actualizó la lista de usuarios; no es necesario volver a crearla.';
-          if (typeof window.renderUsers === 'function') await window.renderUsers();
-        } else {
-          msg.style.color='#a61b1b';
-          msg.textContent = message;
-        }
-      } finally {
-        submit.disabled = false;
-      }
-    };
-  }
-
-  function scan(){
-    lockPublicSignup();
-    watchAuthMessages();
-    injectAdminCreator().catch(console.error);
-  }
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scan, {once:true});
-  else scan();
-  window.addEventListener('hashchange', () => setTimeout(scan,120));
-  setInterval(scan,1500);
-})();
-
-(function loadStage81Extension(){
-  if(window.__JF_STAGE81_LOADER__) return;
-  window.__JF_STAGE81_LOADER__=true;
-  const load=()=>{
-    if(!document.querySelector('link[data-jf-stage81]')){
-      const l=document.createElement('link');l.rel='stylesheet';l.href='./stage8-1.css?v=8.1.0';l.dataset.jfStage81='1';document.head.appendChild(l);
-    }
-    if(!document.querySelector('script[data-jf-stage81]')){
-      const s=document.createElement('script');s.src='./stage8-1.js?v=8.1.0';s.async=true;s.dataset.jfStage81='1';s.onerror=()=>console.error('No se pudo cargar Etapa 8.1');document.body.appendChild(s);
-    }
-  };
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load();
+  function loadScript(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.async=false;s.onload=resolve;s.onerror=reject;document.body.appendChild(s)})}
+  function loadCss(href,key){if(document.querySelector('link[data-'+key+']'))return;const l=document.createElement('link');l.rel='stylesheet';l.href=href;l.dataset[key]='1';document.head.appendChild(l)}
+  async function loadGzipBase64(url){const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw new Error('No se pudo cargar '+url);const b64=(await r.text()).trim(),compressed=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));let source;if('DecompressionStream'in window){const ds=new DecompressionStream('gzip');source=await new Response(new Blob([compressed]).stream().pipeThrough(ds)).text()}else{if(!window.pako)await loadScript('https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js');source=new TextDecoder().decode(window.pako.ungzip(compressed))}const blob=URL.createObjectURL(new Blob([source],{type:'text/javascript'}));await loadScript(blob);URL.revokeObjectURL(blob)}
+  async function loadExtensions(){if(window.__JF_EXTENSIONS_82_LOADED__)return;window.__JF_EXTENSIONS_82_LOADED__=true;try{loadCss('./stage8.css?v=8.2.0','jfStage8');loadCss('./stage8-1.css?v=8.2.0','jfStage81');loadCss('./stage8-2.css?v=8.2.0','jfStage82');if(!window.__JF_STAGE8__)await loadGzipBase64('./stage8.js.gz.b64?v=8.2.0');if(!window.__JF_STAGE81__)await loadScript('./stage8-1.js?v=8.2.0');if(!window.__JF_STAGE82__)await loadScript('./stage8-2.js?v=8.2.0')}catch(e){window.__JF_EXTENSIONS_82_LOADED__=false;console.error('No se pudieron cargar las extensiones 8.x',e)}}
+  function scan(){lockPublicSignup();watchAuth();injectCreator().catch(console.error)}
+  scan();loadExtensions();window.addEventListener('hashchange',()=>setTimeout(scan,120));setInterval(scan,1800);
 })();
