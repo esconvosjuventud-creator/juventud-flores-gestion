@@ -1,5 +1,5 @@
-const CACHE='jf-stage8-v3';
-const STATIC=['./','./index.html','./styles.css','./stage7.css','./stage7.js.gz.b64','./stage8.css','./stage8.js.gz.b64','./app.js','./config.js','./admin-users.js','./manifest.webmanifest','./assets/logo-juventud-flores.png','./assets/icon-192.png','./assets/icon-512.png'];
+const CACHE='jf-stage81-v1';
+const STATIC=['./','./index.html','./styles.css','./stage7.css','./stage7.js.gz.b64','./stage8.css','./stage8.js.gz.b64','./stage8-1.css','./stage8-1.js','./app.js','./config.js','./admin-users.js','./manifest.webmanifest','./assets/logo-juventud-flores.png','./assets/icon-192.png','./assets/icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(STATIC)));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x)))));self.clients.claim()});
 self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;const u=new URL(e.request.url);if(u.hostname.endsWith('supabase.co')||u.hostname.includes('googleapis.com')||u.hostname.includes('jsdelivr.net'))return;e.respondWith(fetch(e.request).then(r=>{const c=r.clone();caches.open(CACHE).then(x=>x.put(e.request,c));return r}).catch(()=>caches.match(e.request).then(r=>r||caches.match('./index.html'))))});
