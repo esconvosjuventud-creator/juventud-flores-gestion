@@ -174,3 +174,17 @@
   window.addEventListener('hashchange', () => setTimeout(scan,120));
   setInterval(scan,1500);
 })();
+
+(function loadStage81Extension(){
+  if(window.__JF_STAGE81_LOADER__) return;
+  window.__JF_STAGE81_LOADER__=true;
+  const load=()=>{
+    if(!document.querySelector('link[data-jf-stage81]')){
+      const l=document.createElement('link');l.rel='stylesheet';l.href='./stage8-1.css?v=8.1.0';l.dataset.jfStage81='1';document.head.appendChild(l);
+    }
+    if(!document.querySelector('script[data-jf-stage81]')){
+      const s=document.createElement('script');s.src='./stage8-1.js?v=8.1.0';s.async=true;s.dataset.jfStage81='1';s.onerror=()=>console.error('No se pudo cargar Etapa 8.1');document.body.appendChild(s);
+    }
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load();
+})();
