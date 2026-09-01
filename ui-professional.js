@@ -62,6 +62,9 @@
   }
 
   function syncMobileNav(){
+    const bar=document.querySelector('.jf-mobile-nav');
+    const app=document.getElementById('app');
+    if(bar)bar.style.display=app?.classList.contains('hidden')?'none':'';
     const active=document.querySelector('#mainNav button.active[data-view]')?.dataset.view||'';
     document.querySelectorAll('[data-jf-mobile]').forEach(b=>b.classList.toggle('active',b.dataset.jfMobile===active));
   }
