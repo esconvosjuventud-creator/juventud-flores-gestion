@@ -85,6 +85,15 @@
     }
   }
 
+  function loadExecutiveDashboard(){
+    if(!document.querySelector('link[data-jf-exec-dashboard]')){
+      const l=document.createElement('link');l.rel='stylesheet';l.href='./dashboard-executive.css?v=1.0.0';l.dataset.jfExecDashboard='1';document.head.appendChild(l);
+    }
+    if(!window.__JF_EXEC_DASHBOARD__&&!document.querySelector('script[data-jf-exec-dashboard]')){
+      const s=document.createElement('script');s.src='./dashboard-executive.js?v=1.0.0';s.async=false;s.dataset.jfExecDashboard='1';document.body.appendChild(s);
+    }
+  }
+
   function scan(){
     document.body.classList.add('jf-pro-ui');
     decorateNavigation();
@@ -92,6 +101,7 @@
     syncMobileNav();
     enhanceForms();
     enhanceModal();
+    loadExecutiveDashboard();
   }
 
   scan();
