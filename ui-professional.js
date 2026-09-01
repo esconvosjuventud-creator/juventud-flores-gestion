@@ -73,7 +73,11 @@
     if(!window.__JF_QUICK_SCHEDULE__)loadAsset('script','script[data-jf-quick-schedule]',{src:'./quick-schedule.js?v=1.0.0',async:false,dataset:{jfQuickSchedule:'1'}});
     if(!window.__JF_QUICK_SCHEDULE_HOOK__)loadAsset('script','script[data-jf-quick-schedule-hook]',{src:'./quick-schedule-hook.js?v=1.0.0',async:false,dataset:{jfQuickScheduleHook:'1'}})
   }
+  function loadTeamUIV3(){
+    loadAsset('link','link[data-jf-team-ui-v3]',{rel:'stylesheet',href:'./ui-team-v3.css?v=3.0.0',dataset:{jfTeamUiV3:'1'}});
+    if(!window.__JF_TEAM_UI_V3__)loadAsset('script','script[data-jf-team-ui-v3]',{src:'./ui-team-v3.js?v=3.0.0',async:false,dataset:{jfTeamUiV3:'1'}})
+  }
 
-  function scan(){document.body.classList.add('jf-pro-ui');decorateNavigation();buildMobileNav();syncMobileNav();enhanceForms();enhanceModal();loadExecutiveDashboard();loadQuickAdd();loadQuickTask();loadQuickSchedule()}
+  function scan(){document.body.classList.add('jf-pro-ui');decorateNavigation();buildMobileNav();syncMobileNav();enhanceForms();enhanceModal();loadExecutiveDashboard();loadQuickAdd();loadQuickTask();loadQuickSchedule();loadTeamUIV3()}
   scan();setTimeout(scan,250);setTimeout(scan,900);const observer=new MutationObserver(()=>requestAnimationFrame(scan));observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
 })();
