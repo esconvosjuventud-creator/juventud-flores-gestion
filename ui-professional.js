@@ -14,7 +14,8 @@
   function loadAssets(){
     css('jf-exec-dashboard','./dashboard-executive.css?v=1.0.1');js('jf-exec-dashboard','./dashboard-executive.js?v=1.0.1');
     css('jf-quick-task','./quick-task.css?v=1.0.1');js('jf-quick-task','./quick-task.js?v=1.0.1');
-    css('jf-quick-schedule','./quick-schedule.css?v=1.0.1');js('jf-quick-schedule','./quick-schedule.js?v=1.0.1');js('jf-quick-schedule-hook','./quick-schedule-hook.js?v=1.0.1');
+    css('jf-quick-schedule','./quick-schedule.css?v=1.0.1');js('jf-quick-schedule','./quick-schedule.js?v=1.0.1');js('jf-quick-schedule-hook','./quick-schedule-hook.js?v=1.0.2');
+    js('jf-agenda-stability','./agenda-stability.js?v=1.0.0');
     js('jf-performance-v2','./performance-v2.js?v=2.0.0');
     css('jf-quick-add','./quick-add.css?v=2.0.0');js('jf-quick-add-v2','./quick-add-v2.js?v=2.0.0');
     css('jf-team-ui-v3','./ui-team-v3.css?v=4.0.0');css('jf-team-ui-v3-brand','./ui-team-v3-brand.css?v=4.0.0');js('jf-team-ui-v4','./ui-team-v4.js?v=4.0.0');
