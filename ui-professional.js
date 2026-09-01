@@ -75,6 +75,7 @@
   }
   function loadTeamUIV3(){
     loadAsset('link','link[data-jf-team-ui-v3]',{rel:'stylesheet',href:'./ui-team-v3.css?v=3.0.0',dataset:{jfTeamUiV3:'1'}});
+    loadAsset('link','link[data-jf-team-ui-v3-brand]',{rel:'stylesheet',href:'./ui-team-v3-brand.css?v=3.0.1',dataset:{jfTeamUiV3Brand:'1'}});
     if(!window.__JF_TEAM_UI_V3__)loadAsset('script','script[data-jf-team-ui-v3]',{src:'./ui-team-v3.js?v=3.0.0',async:false,dataset:{jfTeamUiV3:'1'}})
   }
 
