@@ -19,6 +19,7 @@
     js('jf-performance-v2','./performance-v2.js?v=2.0.0');
     css('jf-quick-add','./quick-add.css?v=2.0.0');js('jf-quick-add-v2','./quick-add-v2.js?v=2.0.0');
     css('jf-team-ui-v3','./ui-team-v3.css?v=4.0.0');css('jf-team-ui-v3-brand','./ui-team-v3-brand.css?v=4.0.0');js('jf-team-ui-v4','./ui-team-v4.js?v=4.0.0');
+    css('jf-help-guide','./help-guide.css?v=1.0.0');js('jf-help-guide','./help-guide.js?v=1.0.0');
   }
 
   buildMobileNav();modalA11y();loadAssets();syncMobile();
