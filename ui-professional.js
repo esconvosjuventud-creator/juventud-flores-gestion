@@ -103,6 +103,15 @@
     }
   }
 
+  function loadQuickTask(){
+    if(!document.querySelector('link[data-jf-quick-task]')){
+      const l=document.createElement('link');l.rel='stylesheet';l.href='./quick-task.css?v=1.0.0';l.dataset.jfQuickTask='1';document.head.appendChild(l);
+    }
+    if(!window.__JF_QUICK_TASK__&&!document.querySelector('script[data-jf-quick-task]')){
+      const s=document.createElement('script');s.src='./quick-task.js?v=1.0.0';s.async=false;s.dataset.jfQuickTask='1';document.body.appendChild(s);
+    }
+  }
+
   function scan(){
     document.body.classList.add('jf-pro-ui');
     decorateNavigation();
@@ -112,6 +121,7 @@
     enhanceModal();
     loadExecutiveDashboard();
     loadQuickAdd();
+    loadQuickTask();
   }
 
   scan();
