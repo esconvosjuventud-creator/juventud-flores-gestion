@@ -94,6 +94,15 @@
     }
   }
 
+  function loadQuickAdd(){
+    if(!document.querySelector('link[data-jf-quick-add]')){
+      const l=document.createElement('link');l.rel='stylesheet';l.href='./quick-add.css?v=1.0.0';l.dataset.jfQuickAdd='1';document.head.appendChild(l);
+    }
+    if(!window.__JF_QUICK_ADD__&&!document.querySelector('script[data-jf-quick-add]')){
+      const s=document.createElement('script');s.src='./quick-add.js?v=1.0.0';s.async=false;s.dataset.jfQuickAdd='1';document.body.appendChild(s);
+    }
+  }
+
   function scan(){
     document.body.classList.add('jf-pro-ui');
     decorateNavigation();
@@ -102,6 +111,7 @@
     enhanceForms();
     enhanceModal();
     loadExecutiveDashboard();
+    loadQuickAdd();
   }
 
   scan();
