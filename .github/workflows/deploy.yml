@@ -19,6 +19,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Validar JavaScript crítico
+        run: |
+          node --check letterhead-template.js
+          node --check soraya-i18n.js
+          node --check task-teamwork.js
+          node --check google-unified-sync.js
+          node --check ui-professional.js
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
