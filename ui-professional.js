@@ -26,6 +26,7 @@
     js('soraya-i18n','./soraya-i18n.js?v=1.0.0');
     js('soraya-letterhead','./letterhead-template.js?v=2.0.0');
     css('soraya-universal-search','./universal-search.css?v=1.0.0');js('soraya-universal-search','./universal-search.js?v=1.0.0');
+    css('soraya-duplicates','./duplicate-detector.css?v=1.0.0');js('soraya-duplicates','./duplicate-detector.js?v=1.0.0');
     css('soraya-brand','./soraya-brand.css?v=1.0.0');js('soraya-brand','./soraya-brand.js?v=1.0.0');
   }
 
