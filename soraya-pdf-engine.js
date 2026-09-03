@@ -40,7 +40,7 @@
       objs[2]=ascii(`<< /Type /Pages /Kids [${kids.join(' ')}] /Count ${pageCount} >>`);
       objs[3]=ascii('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
       objs[4]=ascii('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
-      const imgHead=ascii(`<< /Type /XObject /Subtype /Image /Width 1240 /Height 1754 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${this.image.length} >>\nstream\n`),imgTail=ascii('\nendstream');objs[5]=concat([imgHead,this.image,imgTail]);
+      const imgHead=ascii(`<< /Type /XObject /Subtype /Image /Width 1000 /Height 1415 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${this.image.length} >>\nstream\n`),imgTail=ascii('\nendstream');objs[5]=concat([imgHead,this.image,imgTail]);
       for(let i=0;i<pageCount;i++){
         const pObj=6+i*2,cObj=7+i*2,content=ascii(this.pages[i].join('\n')+'\n');
         objs[pObj]=ascii(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PAGE_W.toFixed(3)} ${PAGE_H.toFixed(3)}] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> /XObject << /Im1 5 0 R >> >> /Contents ${cObj} 0 R >>`);
