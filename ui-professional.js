@@ -24,6 +24,7 @@
     css('soraya-google-unified','./google-unified-sync.css?v=1.0.0');js('soraya-google-unified','./google-unified-sync.js?v=1.0.0');
     css('soraya-task-teamwork','./task-teamwork.css?v=1.0.0');js('soraya-task-teamwork','./task-teamwork.js?v=1.0.0');
     js('soraya-i18n','./soraya-i18n.js?v=1.0.0');
+    js('soraya-letterhead','./letterhead-template.js?v=2.0.0');
     css('soraya-brand','./soraya-brand.css?v=1.0.0');js('soraya-brand','./soraya-brand.js?v=1.0.0');
   }
 
