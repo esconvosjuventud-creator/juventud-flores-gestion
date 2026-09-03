@@ -36,14 +36,21 @@ jobs:
           global.window=global;
           require('./soraya-pdf-engine.js');
           require('./letterhead-background.js');
+          const b64=(global.SORAYA_LETTERHEAD_BG||'').split(',')[1]||'';
+          const image=Buffer.from(b64,'base64');
+          if(image.length<7000) throw new Error('El membrete quedó incompleto');
+          if(image[0]!==0xff || image[1]!==0xd8 || image[image.length-2]!==0xff || image[image.length-1]!==0xd9) throw new Error('JPEG de membrete inválido o truncado');
           const doc=new global.SorayaPDFEngine.PDFDoc();
           doc.addImage(global.SORAYA_LETTERHEAD_BG,'JPEG',0,0,210,297);
           doc.setFont('helvetica','bold').setFontSize(12).text('PRUEBA SORAYA',20,55);
+          doc.setFont('helvetica','normal').setFontSize(10).text('Oficina de la Juventud - PDF institucional',20,70);
           const bytes=doc.toUint8Array();
-          if(bytes.length<15000) throw new Error('PDF generado demasiado pequeño');
           const head=Buffer.from(bytes.slice(0,8)).toString('latin1');
+          const tail=Buffer.from(bytes.slice(-20)).toString('latin1');
           if(!head.startsWith('%PDF-1.4')) throw new Error('Encabezado PDF inválido');
-          console.log('PDF OK:',bytes.length,'bytes');
+          if(!tail.includes('%%EOF')) throw new Error('PDF incompleto');
+          if(bytes.length<=image.length) throw new Error('El PDF no contiene estructura adicional al membrete');
+          console.log('Membrete OK:',image.length,'bytes · PDF OK:',bytes.length,'bytes');
           NODE
       - name: Setup Pages
         uses: actions/configure-pages@v5
