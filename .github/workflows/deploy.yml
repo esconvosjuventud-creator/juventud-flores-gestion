@@ -26,6 +26,7 @@ jobs:
           node --check task-teamwork.js
           node --check google-unified-sync.js
           node --check universal-search.js
+          node --check duplicate-detector.js
           node --check ui-professional.js
       - name: Setup Pages
         uses: actions/configure-pages@v5
