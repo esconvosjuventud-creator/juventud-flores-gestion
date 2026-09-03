@@ -21,6 +21,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Validar JavaScript crítico
         run: |
+          node --check soraya-pdf-engine.js
+          node --check letterhead-background.js
           node --check letterhead-template.js
           node --check soraya-i18n.js
           node --check task-teamwork.js
@@ -28,6 +30,21 @@ jobs:
           node --check universal-search.js
           node --check duplicate-detector.js
           node --check ui-professional.js
+      - name: Prueba real del motor PDF
+        run: |
+          node - <<'NODE'
+          global.window=global;
+          require('./soraya-pdf-engine.js');
+          require('./letterhead-background.js');
+          const doc=new global.SorayaPDFEngine.PDFDoc();
+          doc.addImage(global.SORAYA_LETTERHEAD_BG,'JPEG',0,0,210,297);
+          doc.setFont('helvetica','bold').setFontSize(12).text('PRUEBA SORAYA',20,55);
+          const bytes=doc.toUint8Array();
+          if(bytes.length<15000) throw new Error('PDF generado demasiado pequeño');
+          const head=Buffer.from(bytes.slice(0,8)).toString('latin1');
+          if(!head.startsWith('%PDF-1.4')) throw new Error('Encabezado PDF inválido');
+          console.log('PDF OK:',bytes.length,'bytes');
+          NODE
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
