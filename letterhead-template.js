@@ -1,168 +1,76 @@
-/* Soraya · plantilla institucional de documentos
-   Oficina de la Juventud – Intendencia Departamental de Flores */
+/* Soraya · membrete institucional oficial
+   Fuente: Hoja_membretada_Juventud.docx · Oficina de la Juventud */
 (() => {
   'use strict';
-  const BRAND_LOGO = './assets/logo-juventud-flores.png';
-  const SUPPORTED = new Set(['notes','meetings','projects','events']);
-  const mm = { left: 18, right: 192, top: 49, bottom: 269 };
-  let logoData = null;
+  if(window.__SORAYA_LETTERHEAD_V2__) return;
+  window.__SORAYA_LETTERHEAD_V2__=true;
+  const C=window.JF_CONFIG;
+  if(!C||!window.supabase) return;
+  const db=window.JF_DB||window.supabase.createClient(C.supabaseUrl,C.supabasePublishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+  const $=s=>document.querySelector(s);
+  const TOP_LOGO='data:image/jpeg;base64,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';
+  const BRAND_LOGO='./assets/logo-juventud-flores.png';
+  const SOURCE={key:'oficina_juventud_2026',filename:'Hoja_membretada_Juventud.docx',sha256:'65c06e64061dd55f06464bcd8b85906cb6ff4910c021aea4dccfcd72f17b3408'};
+  const mm={left:20,right:190,top:48,bottom:258};
+  let logoData=null,logoRatio=2.5,detailsPatched=false,jf82Patched=false,jf84Patched=false;
 
-  async function dataUrl(url) {
-    const r = await fetch(url, {cache:'force-cache'});
-    if (!r.ok) throw new Error('No se pudo cargar la identidad institucional');
-    const b = await r.blob();
-    return await new Promise((resolve,reject)=>{const fr=new FileReader();fr.onload=()=>resolve(fr.result);fr.onerror=reject;fr.readAsDataURL(b)});
+  function notify(text){const n=$('#toast');if(n){n.textContent=text;n.classList.add('show');clearTimeout(window.__sorayaLetterToast);window.__sorayaLetterToast=setTimeout(()=>n.classList.remove('show'),2600)}else console.log(text)}
+  function safe(v){return v===null||v===undefined?'':String(v)}
+  function fileSafe(v){return safe(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]+/g,'_').replace(/^_+|_+$/g,'').slice(0,70)||'Documento'}
+  function humanDate(v){if(!v)return'';const d=/^\d{4}-\d{2}-\d{2}$/.test(String(v))?new Date(v+'T12:00:00'):new Date(v);if(Number.isNaN(d.getTime()))return String(v);return new Intl.DateTimeFormat('es-UY',{day:'numeric',month:'long',year:'numeric'}).format(d)}
+  function shortDate(v){if(!v)return'';const d=/^\d{4}-\d{2}-\d{2}$/.test(String(v))?new Date(v+'T12:00:00'):new Date(v);if(Number.isNaN(d.getTime()))return String(v);return new Intl.DateTimeFormat('es-UY',{day:'2-digit',month:'2-digit',year:'numeric'}).format(d)}
+  function todayIso(){return new Intl.DateTimeFormat('en-CA',{timeZone:C.timezone||'America/Montevideo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
+  async function ensureJsPdf(){if(window.jspdf?.jsPDF)return window.jspdf.jsPDF;await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';s.onload=resolve;s.onerror=reject;document.head.appendChild(s)});if(!window.jspdf?.jsPDF)throw new Error('No se pudo cargar el generador PDF');return window.jspdf.jsPDF}
+  async function brand(){if(logoData)return logoData;const r=await fetch(BRAND_LOGO,{cache:'force-cache'});if(!r.ok)throw new Error('No se pudo cargar el logo institucional');const b=await r.blob();logoData=await new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=rej;fr.readAsDataURL(b)});logoRatio=await new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im.naturalWidth/im.naturalHeight);im.onerror=rej;im.src=logoData});return logoData}
+  async function paint(doc,page,total){
+    const bottom=await brand();
+    doc.addImage(TOP_LOGO,'JPEG',20,15.5,62,12.7,undefined,'FAST');
+    const bw=39,bh=bw/logoRatio;doc.addImage(bottom,'PNG',158.5,274,bw,bh,undefined,'FAST');
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(28);doc.text('Oficina de la Juventud',111,278.5);
+    doc.setTextColor(0,65,190);doc.text('juventud@flores.gub.uy',111,284);const tw=doc.getTextWidth('juventud@flores.gub.uy');doc.setDrawColor(0,65,190);doc.setLineWidth(.18);doc.line(111,284.8,111+tw,284.8);
+    if(page){doc.setTextColor(115);doc.setFontSize(7.3);doc.text(`Página ${page}/${total}`,190,266,{align:'right'})}
+    doc.setTextColor(0);
   }
-  async function brandLogo(){ return logoData || (logoData = await dataUrl(BRAND_LOGO)); }
-  function pdf(){ return new window.jspdf.jsPDF({unit:'mm',format:'a4',orientation:'portrait'}); }
-  async function paint(doc){
-    doc.setFillColor(255,255,255); doc.rect(0,0,210,297,'F');
-    doc.setDrawColor(43,83,99); doc.setLineWidth(.6); doc.roundedRect(10,8.5,11,14,1.4,1.4,'S');
-    doc.setFont('helvetica','bold'); doc.setTextColor(43,83,99); doc.setFontSize(10); doc.text('F',15.5,18,{align:'center'});
-    doc.setFontSize(20); doc.text('Flores',25,17.7);
-    doc.setFont('helvetica','normal'); doc.setFontSize(7.6); doc.text('Intendencia',51,13.5); doc.text('Departamental',51,17.4);
-    try{ doc.addImage(await brandLogo(),'PNG',139,7.2,58,20,undefined,'FAST'); }catch(e){ console.warn(e); }
-    doc.setDrawColor(16,83,119); doc.setLineWidth(.7); doc.line(14,31,91,31);
-    doc.setDrawColor(116,16,92); doc.line(91,31,151,31);
-    doc.setDrawColor(224,55,0); doc.line(151,31,196,31);
-    doc.setDrawColor(16,83,119); doc.line(14,279,91,279);
-    doc.setDrawColor(116,16,92); doc.line(91,279,151,279);
-    doc.setDrawColor(224,55,0); doc.line(151,279,196,279);
-    doc.setTextColor(54,62,69); doc.setFont('helvetica','bold'); doc.setFontSize(7.2); doc.text('OFICINA DE LA JUVENTUD',14,285);
-    doc.setFont('helvetica','normal'); doc.setFontSize(6.7); doc.text('Intendencia Departamental de Flores',14,289);
-    doc.setTextColor(16,83,119); doc.setFontSize(7.2); doc.text('juventud@flores.gub.uy',196,287,{align:'right'});
-  }
-  function normal(doc,size=10){ doc.setFont('helvetica','normal'); doc.setFontSize(size); doc.setTextColor(38,45,53); }
-  function bold(doc,size=10){ doc.setFont('helvetica','bold'); doc.setFontSize(size); doc.setTextColor(26,57,76); }
-  function humanDate(v){
-    if(!v) return '';
-    const d = /^\d{4}-\d{2}-\d{2}$/.test(v) ? new Date(v+'T12:00:00') : new Date(v);
-    if(Number.isNaN(d.getTime())) return String(v);
-    return new Intl.DateTimeFormat('es-UY',{day:'numeric',month:'long',year:'numeric'}).format(d);
-  }
-  function safe(v){ return v===null||v===undefined ? '' : String(v); }
-  function fileSafe(v){ return safe(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]+/g,'_').replace(/^_+|_+$/g,'').slice(0,70)||'Documento'; }
-  async function newDoc(){ const doc=pdf(); await paint(doc); return doc; }
-  async function page(doc){ doc.addPage(); await paint(doc); return mm.top; }
-  async function ensure(doc,y,need=12){ return y+need>mm.bottom ? await page(doc) : y; }
-  async function paragraph(doc,text,y,{size=10,boldText=false,gap=4,indent=0,align='left'}={}){
-    if(!safe(text).trim()) return y;
-    y=await ensure(doc,y,12);
-    (boldText?bold:normal)(doc,size);
-    const width=mm.right-mm.left-indent;
-    const lines=doc.splitTextToSize(safe(text),width);
-    const lineH=size*0.42+1.15;
-    for(const line of lines){
-      y=await ensure(doc,y,lineH+2);
-      if(align==='right') doc.text(line,mm.right,y,{align:'right'}); else doc.text(line,mm.left+indent,y);
-      y+=lineH;
-    }
-    return y+gap;
-  }
-  async function labelValue(doc,label,value,y){
-    if(!safe(value).trim()) return y;
-    y=await ensure(doc,y,10);
-    bold(doc,9.4); doc.text(label.toUpperCase(),mm.left,y); y+=5;
-    return paragraph(doc,value,y,{size:10,gap:4});
-  }
-  async function heading(doc,title,subtitle=''){
-    let y=mm.top;
-    bold(doc,16); doc.text(safe(title).toUpperCase(),mm.left,y); y+=7;
-    if(subtitle){ normal(doc,9.5); doc.text(subtitle,mm.left,y); y+=7; }
-    doc.setDrawColor(116,16,92); doc.setLineWidth(.35); doc.line(mm.left,y-2,mm.right,y-2);
-    return y+3;
-  }
-  function getItem(resource,id){ return (state?.[resource]||[]).find(x=>String(x.id)===String(id)); }
-
-  async function notePdf(item){
-    const doc=await newDoc(); let y=mm.top;
-    normal(doc,10);
-    doc.text(`Trinidad, ${humanDate(item.note_date)||humanDate(new Date().toISOString())}`,mm.right,y,{align:'right'}); y+=11;
-    if(item.number){ bold(doc,10); doc.text(`NOTA N.º ${safe(item.number)}`,mm.left,y); y+=8; }
-    if(item.recipient){ normal(doc,10); doc.text('A:',mm.left,y); bold(doc,10); doc.text(safe(item.recipient),mm.left+8,y); y+=5.5; }
-    if(item.department){ normal(doc,10); doc.text(safe(item.department),mm.left+8,y); y+=5.5; }
-    if(item.recipient||item.department){ normal(doc,10); doc.text('Presente',mm.left+8,y); y+=11; }
-    if(item.subject){ bold(doc,10.5); doc.text('ASUNTO:',mm.left,y); y=await paragraph(doc,item.subject,y,{size:10.5,boldText:true,indent:22,gap:8}); }
-    y=await paragraph(doc,item.reason,y,{size:10.5,gap:7});
-    if(item.response){ y=await labelValue(doc,'Respuesta / resultado',item.response,y); }
-    if(item.followup_date){ y=await labelValue(doc,'Seguimiento',humanDate(item.followup_date),y); }
-    y=await ensure(doc,y,32);
-    if(y<235) y=235;
-    if(item.responsible_name){
-      bold(doc,10); doc.text(safe(item.responsible_name),105,y,{align:'center'}); y+=5;
-      normal(doc,9); doc.text('Oficina de la Juventud',105,y,{align:'center'}); y+=4.5;
-      doc.text('Intendencia Departamental de Flores',105,y,{align:'center'});
-    }
-    doc.save(`Nota_${fileSafe(item.number||item.subject)}.pdf`);
-  }
+  async function newDoc(){const jsPDF=await ensureJsPdf();return new jsPDF({unit:'mm',format:'a4',orientation:'portrait'})}
+  async function finalize(doc){const pages=doc.getNumberOfPages();for(let p=1;p<=pages;p++){doc.setPage(p);await paint(doc,p,pages)}return doc}
+  function normal(doc,size=10){doc.setFont('helvetica','normal');doc.setFontSize(size);doc.setTextColor(38,45,53)}
+  function bold(doc,size=10){doc.setFont('helvetica','bold');doc.setFontSize(size);doc.setTextColor(26,57,76)}
+  async function ensure(doc,y,need=12){if(y+need<=mm.bottom)return y;doc.addPage();return mm.top}
+  async function paragraph(doc,text,y,{size=10,boldText=false,gap=4,indent=0,align='left'}={}){if(!safe(text).trim())return y;(boldText?bold:normal)(doc,size);const width=mm.right-mm.left-indent,lines=doc.splitTextToSize(safe(text),width),lineH=size*.42+1.15;for(const line of lines){y=await ensure(doc,y,lineH+2);doc.text(line,align==='right'?mm.right:mm.left+indent,y,align==='right'?{align:'right'}:undefined);y+=lineH}return y+gap}
+  async function labelValue(doc,label,value,y){if(!safe(value).trim())return y;y=await ensure(doc,y,10);bold(doc,9.4);doc.text(label.toUpperCase(),mm.left,y);y+=5;return paragraph(doc,value,y,{size:10,gap:4})}
+  async function heading(doc,title,subtitle=''){let y=mm.top;bold(doc,16);doc.text(safe(title).toUpperCase(),mm.left,y);y+=7;if(subtitle){normal(doc,9.5);doc.text(subtitle,mm.left,y);y+=7}doc.setDrawColor(116,16,92);doc.setLineWidth(.35);doc.line(mm.left,y-2,mm.right,y-2);return y+3}
+  async function record(resource,id){try{if(typeof state!=='undefined'&&state?.[resource]){const x=state[resource].find(v=>String(v.id)===String(id));if(x)return x}}catch{}const{data,error}=await db.from(resource).select('*').eq('id',id).maybeSingle();if(error)throw error;return data}
 
   const genericFields={
+    tasks:[['Descripción',x=>x.description],['Categoría',x=>x.category],['Estado',x=>x.status],['Prioridad',x=>x.priority],['Fecha',x=>humanDate(x.task_date)],['Hora',x=>x.task_time],['Fecha límite',x=>humanDate(x.deadline)],['Institución',x=>x.institution_name],['Contacto',x=>x.contact_name],['Proyecto',x=>x.project_name],['Próxima acción',x=>x.next_action],['Seguimiento',x=>humanDate(x.followup_date)],['Observaciones',x=>x.notes]],
     meetings:[['Fecha',x=>humanDate(x.meeting_date)],['Hora',x=>x.meeting_time],['Lugar',x=>x.place],['Instituciones',x=>x.institutions],['Participantes',x=>x.participants],['Orden del día',x=>x.agenda],['Temas tratados',x=>x.discussed],['Decisiones',x=>x.decisions],['Compromisos',x=>x.commitments],['Próximos pasos',x=>x.next_steps]],
     projects:[['Estado',x=>x.status],['Inicio',x=>humanDate(x.start_date)],['Fin',x=>humanDate(x.end_date)],['Objetivo',x=>x.objective],['Descripción',x=>x.description],['Presupuesto',x=>x.budget?`$ ${x.budget}`:''],['Resultados',x=>x.results]],
     events:[['Fecha',x=>humanDate(x.event_date)],['Horario',x=>[x.start_time,x.end_time].filter(Boolean).join(' a ')],['Lugar',x=>x.place],['Dirección',x=>x.address],['Organiza',x=>x.organizer],['Instituciones colaboradoras',x=>x.collaborators],['Público objetivo',x=>x.target_audience],['Participantes estimados',x=>x.expected_participants],['Participantes reales',x=>x.actual_participants],['Descripción',x=>x.description],['Objetivos',x=>x.objectives],['Responsable',x=>x.responsible_name],['Presupuesto',x=>x.budget?`$ ${x.budget}`:''],['Logística / necesidades',x=>x.logistics],['Evaluación',x=>x.evaluation]]
   };
-  function titleFor(resource,item){ return resource==='meetings'?item.subject:resource==='projects'?item.name:resource==='events'?item.name:item.subject; }
-  function eyebrowFor(resource){ return resource==='meetings'?'ACTA / REGISTRO DE REUNIÓN':resource==='projects'?'PROYECTO':resource==='events'?'EVENTO / ACTIVIDAD':'DOCUMENTO'; }
-  async function genericPdf(resource,item){
-    const doc=await newDoc(); let y=await heading(doc,titleFor(resource,item),eyebrowFor(resource));
-    for(const [label,fn] of genericFields[resource]||[]) y=await labelValue(doc,label,fn(item),y);
-    doc.save(`${resource}_${fileSafe(titleFor(resource,item))}.pdf`);
-  }
-  async function entityPdf(resource,id){
-    const item=getItem(resource,id); if(!item) return toast('No se encontró el registro');
-    try { if(resource==='notes') await notePdf(item); else await genericPdf(resource,item); }
-    catch(e){ console.error(e); toast('No se pudo generar el PDF membretado'); }
-  }
+  function titleFor(resource,x){return resource==='tasks'?x.title:resource==='meetings'?x.subject:resource==='projects'?x.name:resource==='events'?x.name:x.subject}
+  function typeFor(resource){return resource==='tasks'?'TAREA':resource==='meetings'?'ACTA / REGISTRO DE REUNIÓN':resource==='projects'?'PROYECTO':resource==='events'?'EVENTO / ACTIVIDAD':'DOCUMENTO'}
+  async function notePdf(x){const doc=await newDoc();let y=mm.top;normal(doc,10);doc.text(`Trinidad, ${humanDate(x.note_date)||humanDate(todayIso())}`,mm.right,y,{align:'right'});y+=11;if(x.number){bold(doc,10);doc.text(`NOTA N.º ${safe(x.number)}`,mm.left,y);y+=8}if(x.recipient){normal(doc,10);doc.text('A:',mm.left,y);bold(doc,10);doc.text(safe(x.recipient),mm.left+8,y);y+=5.5}if(x.department){normal(doc,10);doc.text(safe(x.department),mm.left+8,y);y+=5.5}if(x.recipient||x.department){normal(doc,10);doc.text('Presente',mm.left+8,y);y+=11}if(x.subject){bold(doc,10.5);doc.text('ASUNTO:',mm.left,y);y=await paragraph(doc,x.subject,y,{size:10.5,boldText:true,indent:22,gap:8})}y=await paragraph(doc,x.reason,y,{size:10.5,gap:7});if(x.response)y=await labelValue(doc,'Respuesta / resultado',x.response,y);if(x.followup_date)y=await labelValue(doc,'Seguimiento',humanDate(x.followup_date),y);if(x.responsible_name){y=await ensure(doc,Math.max(y,230),26);bold(doc,10);doc.text(safe(x.responsible_name),105,y,{align:'center'});y+=5;normal(doc,9);doc.text('Oficina de la Juventud',105,y,{align:'center'});y+=4.5;doc.text('Intendencia Departamental de Flores',105,y,{align:'center'})}await finalize(doc);doc.save(`Nota_${fileSafe(x.number||x.subject)}.pdf`)}
+  async function genericPdf(resource,x){const doc=await newDoc();let y=await heading(doc,titleFor(resource,x),typeFor(resource));for(const[label,fn]of genericFields[resource]||[])y=await labelValue(doc,label,fn(x),y);await finalize(doc);doc.save(`${resource}_${fileSafe(titleFor(resource,x))}.pdf`)}
+  async function entityPdf(resource,id){try{const x=await record(resource,id);if(!x)return notify('No se encontró el registro');if(resource==='notes')await notePdf(x);else await genericPdf(resource,x);notify('PDF generado con membrete institucional')}catch(e){console.error(e);notify('No se pudo generar el PDF membretado')}}
 
-  async function managementPdf(){
-    try{
-      const doc=await newDoc(); let y=await heading(doc,'Informe de gestión',`Generado: ${fullDate()}`);
-      const active=state.tasks.filter(t=>!['Realizada','Cancelada'].includes(t.status));
-      const rows=[
-        ['Tareas realizadas',state.tasks.filter(t=>t.status==='Realizada').length],
-        ['Tareas pendientes',active.length],['Esperando respuesta',active.filter(t=>t.status==='Esperando respuesta').length],
-        ['Eventos registrados',state.events.length],['Reuniones',state.meetings.length],
-        ['Proyectos activos',state.projects.filter(p=>!['Finalizado','Cancelado'].includes(p.status)).length],
-        ['Participación registrada',state.participation_records.reduce((a,x)=>a+Number(x.total||0),0)]
-      ];
-      for(const [l,v] of rows){ y=await ensure(doc,y,9); bold(doc,10); doc.text(l,mm.left,y); normal(doc,10); doc.text(String(v),mm.right,y,{align:'right'}); doc.setDrawColor(224,226,230); doc.line(mm.left,y+2,mm.right,y+2); y+=9; }
-      doc.save(`Informe_Juventud_Flores_${isoToday()}.pdf`);
-    }catch(e){console.error(e);toast('No se pudo generar el informe membretado')}
-  }
-  async function annualPdf(){
-    try{
-      const y0=Number($('memoryYear').value),doc=await newDoc(); let y=await heading(doc,`Memoria de gestión ${y0}`,'OFICINA DE LA JUVENTUD');
-      const sections=[['Introducción',$('memoryIntro').value],['Principales logros',$('memoryHighlights').value],['Desafíos',$('memoryChallenges').value],['Prioridades '+(y0+1),$('memoryPriorities').value]];
-      for(const [t,x] of sections){ if(!x) continue; y=await ensure(doc,y,18); bold(doc,12); doc.text(t,mm.left,y); y+=7; y=await paragraph(doc,x,y,{size:10,gap:7}); }
-      doc.save(`Memoria_Juventud_Flores_${y0}.pdf`);
-    }catch(e){console.error(e);toast('No se pudo generar la memoria membretada')}
-  }
-  async function blankPdf(){ try{const doc=await newDoc();doc.save('Hoja_membretada_Juventud.pdf')}catch(e){toast('No se pudo generar la plantilla')} }
+  async function casePdf(id){try{const{data:x,error}=await db.from('institutional_cases').select('*').eq('id',id).maybeSingle();if(error)throw error;if(!x)return;const doc=await newDoc();let y=await heading(doc,x.title||'Trámite institucional',`${x.case_type||'TRÁMITE'}${x.case_number?' · '+x.case_number:''}`);for(const[label,val]of [['Institución',x.institution_name],['Estado',x.status],['Prioridad',x.priority],['Fecha de apertura',humanDate(x.opened_date)],['Vencimiento',humanDate(x.due_date)],['Responsable',x.assigned_to_name],['Descripción',x.description],['Resolución / resultado',x.resolution]])y=await labelValue(doc,label,val,y);await finalize(doc);doc.save(`Tramite_${fileSafe(x.case_number||x.title)}.pdf`);notify('Trámite exportado con membrete institucional')}catch(e){console.error(e);notify('No se pudo generar el trámite')}}
+  async function messagePdf(id){try{const{data:x,error}=await db.from('institutional_messages').select('*').eq('id',id).maybeSingle();if(error)throw error;if(!x)return;const doc=await newDoc();let y=await heading(doc,x.subject||'Comunicación institucional',`${x.direction||'COMUNICACIÓN'} · ${x.channel||''}`);for(const[label,val]of [['Fecha',humanDate(x.registered_date)],['Hora',x.registered_time],['Remitente',x.sender],['Destinatario',x.recipient],['Institución',x.institution],['Estado',x.status],['Prioridad',x.priority],['Referencia externa',x.external_reference],['Resumen',x.summary],['Contenido',x.content]])y=await labelValue(doc,label,val,y);await finalize(doc);doc.save(`Comunicacion_${fileSafe(x.subject)}.pdf`);notify('Comunicación exportada con membrete institucional')}catch(e){console.error(e);notify('No se pudo generar la comunicación')}}
 
-  function addDetailButton(resource,id){
-    if(!SUPPORTED.has(resource)) return;
-    const c=$('detailContent'); if(!c||c.querySelector('.letterhead-pdf-btn')) return;
-    const box=document.createElement('div'); box.className='actions space-top';
-    box.innerHTML='<button class="primary-btn letterhead-pdf-btn" type="button">📄 Descargar PDF membretado</button>';
-    box.querySelector('button').onclick=()=>entityPdf(resource,id);
-    c.prepend(box);
-  }
-  const originalOpenDetails=window.openDetails;
-  if(typeof originalOpenDetails==='function') window.openDetails=async function(resource,id){ await originalOpenDetails(resource,id); addDetailButton(resource,id); };
+  async function officialPdf(id){try{const{data:x,error}=await db.from('generated_documents').select('*').eq('id',id).maybeSingle();if(error)throw error;if(!x)return;const doc=await newDoc();let y=mm.top;doc.setFont('helvetica','bold');doc.setFontSize(9);doc.text(x.official_number||'BORRADOR · SIN NÚMERO',mm.right,19,{align:'right'});normal(doc,8.7);doc.text(`Trinidad, Flores · ${shortDate(x.issue_date||todayIso())}`,mm.right,26,{align:'right'});bold(doc,12);doc.text(String(x.document_type||'DOCUMENTO').toUpperCase(),mm.left,y);y+=8;bold(doc,11);const titleLines=doc.splitTextToSize(x.title||'',mm.right-mm.left);doc.text(titleLines,mm.left,y);y+=Math.max(8,titleLines.length*5.4+3);normal(doc,10);if(x.recipient){doc.text(`Destinatario: ${x.recipient}`,mm.left,y);y+=6}if(x.department){doc.text(`Área / Dirección: ${x.department}`,mm.left,y);y+=7}doc.setDrawColor(215);doc.line(mm.left,y,mm.right,y);y+=8;y=await paragraph(doc,String(x.body_text||'').replace(/\\n/g,'\n'),y,{size:10.5,gap:7});if(x.signed_at){y=await ensure(doc,y,20);bold(doc,10);doc.text('Visto bueno / firma interna registrada',mm.left,y);y+=6;normal(doc,10);doc.text(x.signed_by_name||'Usuario autorizado',mm.left,y);y+=5;normal(doc,9);doc.text(shortDate(x.signed_at),mm.left,y)}else if(x.official_status==='Para firma'){normal(doc,9);doc.setTextColor(110);doc.text('Pendiente de visto bueno / firma interna.',mm.left,y);doc.setTextColor(0)}await finalize(doc);doc.save(`${fileSafe(x.official_number||'BORRADOR')}-${fileSafe(x.title)}.pdf`);const{data:{session}}=await db.auth.getSession();if(session?.user){const{data:p}=await db.from('profiles').select('role,active').eq('id',session.user.id).maybeSingle();if(p?.active&&['admin','equipo'].includes(p.role)){await db.from('generated_documents').update({use_institutional_letterhead:true,letterhead_key:SOURCE.key}).eq('id',id);try{await db.rpc('register_official_pdf',{p_document_id:id})}catch{}}}notify('Documento oficial generado con membrete institucional')}catch(e){console.error(e);notify(e?.message||'No se pudo generar el documento oficial')}}
 
-  document.addEventListener('click',e=>{
-    const b=e.target.closest?.('#exportPdfBtn,#memoryPdf'); if(!b) return;
-    e.preventDefault(); e.stopImmediatePropagation();
-    if(b.id==='exportPdfBtn') managementPdf(); else annualPdf();
-  },true);
+  async function managementPdf(){try{const doc=await newDoc();let y=await heading(doc,'Informe de gestión',`Generado: ${humanDate(todayIso())}`);let st;try{st=state}catch{st=null}if(!st)throw new Error('La información de gestión todavía se está cargando');const active=st.tasks.filter(t=>!['Realizada','Cancelada'].includes(t.status));const rows=[['Tareas realizadas',st.tasks.filter(t=>t.status==='Realizada').length],['Tareas pendientes',active.length],['Esperando respuesta',active.filter(t=>t.status==='Esperando respuesta').length],['Eventos registrados',st.events.length],['Reuniones',st.meetings.length],['Proyectos activos',st.projects.filter(p=>!['Finalizado','Cancelado'].includes(p.status)).length],['Participación registrada',st.participation_records.reduce((a,x)=>a+Number(x.total||0),0)]];for(const[l,v]of rows){y=await ensure(doc,y,9);bold(doc,10);doc.text(l,mm.left,y);normal(doc,10);doc.text(String(v),mm.right,y,{align:'right'});doc.setDrawColor(224);doc.line(mm.left,y+2,mm.right,y+2);y+=9}await finalize(doc);doc.save(`Informe_Juventud_Flores_${todayIso()}.pdf`)}catch(e){console.error(e);notify('No se pudo generar el informe membretado')}}
+  async function annualPdf(){try{const year=Number($('#memoryYear')?.value||new Date().getFullYear()),doc=await newDoc();let y=await heading(doc,`Memoria de gestión ${year}`,'OFICINA DE LA JUVENTUD');const sections=[['Introducción',$('#memoryIntro')?.value],['Principales logros',$('#memoryHighlights')?.value],['Desafíos',$('#memoryChallenges')?.value],['Prioridades '+(year+1),$('#memoryPriorities')?.value]];for(const[t,x]of sections){if(!x)continue;y=await ensure(doc,y,18);bold(doc,12);doc.text(t,mm.left,y);y+=7;y=await paragraph(doc,x,y,{size:10,gap:7})}await finalize(doc);doc.save(`Memoria_Juventud_Flores_${year}.pdf`)}catch(e){console.error(e);notify('No se pudo generar la memoria membretada')}}
+  async function blankPdf(){try{const doc=await newDoc();await finalize(doc);doc.save('Hoja_membretada_Juventud.pdf')}catch(e){notify('No se pudo generar la plantilla')}}
 
-  function settingsCard(){
-    const grid=document.querySelector('#view-settings .grid.two'); if(!grid||grid.querySelector('#letterheadSettings')) return;
-    const a=document.createElement('article'); a.className='card span2'; a.id='letterheadSettings';
-    a.innerHTML='<p class="eyebrow">DOCUMENTOS INSTITUCIONALES</p><h2>Hoja membretada de Juventud</h2><p><strong>Plantilla institucional predeterminada: activa</strong></p><p class="muted">Las notas, trámites, actas, proyectos, eventos, informes y memorias generados desde Soraya utilizan el membrete oficial de la Oficina de la Juventud.</p><div class="actions"><button id="blankLetterheadPdf" class="secondary-btn" type="button">Descargar hoja en blanco</button></div>';
-    grid.appendChild(a); a.querySelector('#blankLetterheadPdf').onclick=blankPdf;
-  }
-  settingsCard();
-  new MutationObserver(settingsCard).observe(document.body,{childList:true,subtree:true});
-  window.SORAYA_LETTERHEAD={active:true,version:'2026-09-03',entityPdf,blankPdf};
+  function detailButton(kind,id,label='📄 Descargar PDF membretado'){const c=$('#detailContent');if(!c||c.querySelector('.letterhead-pdf-btn'))return;const box=document.createElement('div');box.className='actions space-top soraya-letterhead-actions';box.innerHTML=`<button class="primary-btn letterhead-pdf-btn" type="button">${label}</button>`;const b=box.querySelector('button');if(kind==='case')b.onclick=()=>casePdf(id);else if(kind==='message')b.onclick=()=>messagePdf(id);else b.onclick=()=>entityPdf(kind,id);c.prepend(box)}
+  function patchDetails(){if(detailsPatched||typeof window.openDetails!=='function')return;detailsPatched=true;const original=window.openDetails;window.openDetails=async function(resource,id){await original(resource,id);if(['notes','meetings','projects','events','tasks'].includes(resource))detailButton(resource,id)}}
+  function patch82(){if(jf82Patched||!window.JF82)return;jf82Patched=true;if(typeof window.JF82.viewCase==='function'){const old=window.JF82.viewCase;window.JF82.viewCase=async function(id){const r=await old(id);setTimeout(()=>detailButton('case',id,'📄 Exportar trámite membretado'),30);return r}}if(typeof window.JF82.viewMessage==='function'){const old=window.JF82.viewMessage;window.JF82.viewMessage=async function(id){const r=await old(id);setTimeout(()=>detailButton('message',id,'📄 Exportar comunicación membretada'),30);return r}}}
+  function patch84(){if(jf84Patched||!window.JF84)return;jf84Patched=true;window.JF84.pdf=officialPdf;window.JF84.__sorayaLetterhead=true}
+  function decoratePreparedDocument(){const box=$('#jf81DocPreview');if(!box||box.classList.contains('hidden')||box.querySelector('.soraya-letterhead-note'))return;const n=document.createElement('div');n.className='soraya-letterhead-note';n.style.cssText='margin:10px 0;padding:10px 12px;border-radius:12px;background:#f5edf4;color:#681653;font-weight:700;font-size:13px';n.textContent='✓ Hoja membretada institucional: se aplicará automáticamente al documento exportado.';box.prepend(n)}
+  function settingsCard(){const view=$('#view-settings');if(!view||$('#letterheadSettings'))return;const a=document.createElement('article');a.className='card';a.id='letterheadSettings';a.innerHTML=`<p class="eyebrow">DOCUMENTOS INSTITUCIONALES</p><h2>Hoja membretada de Juventud</h2><p><strong>✓ Plantilla predeterminada activa</strong></p><p class="muted">Archivo de origen: ${SOURCE.filename}. Se aplica a notas, trámites, comunicaciones, actas, proyectos, eventos, informes, memorias y documentos oficiales.</p><div class="actions"><button id="blankLetterheadPdf" class="secondary-btn" type="button">Descargar hoja en blanco</button></div>`;view.appendChild(a);a.querySelector('#blankLetterheadPdf').onclick=blankPdf}
+  function scan(){patchDetails();patch82();patch84();settingsCard();decoratePreparedDocument()}
+  document.addEventListener('click',e=>{const b=e.target.closest?.('#exportPdfBtn,#memoryPdf');if(b){e.preventDefault();e.stopImmediatePropagation();b.id==='exportPdfBtn'?managementPdf():annualPdf();return}if(e.target.closest?.('#jf81BuildDoc,#jf81SaveDoc,#jf81DocToNote'))setTimeout(decoratePreparedDocument,80);if(e.target.closest?.('[data-view="settings"]'))setTimeout(settingsCard,80)},true);
+  window.addEventListener('hashchange',()=>setTimeout(scan,100));
+  setTimeout(scan,350);setTimeout(scan,1000);setTimeout(scan,2200);
+  window.SORAYA_LETTERHEAD={active:true,version:'2026-09-03-v2',source:SOURCE,entityPdf,casePdf,messagePdf,officialPdf,blankPdf,paint};
 })();
