@@ -14,7 +14,7 @@
   function hexText(s){return winBytes(s).map(b=>b.toString(16).padStart(2,'0')).join('').toUpperCase()}
   function charFactor(ch){if(ch===' ')return .28;if('ilI1.,:;!|'.includes(ch))return .25;if('mwMW@%'.includes(ch))return .82;if(/[A-Z0-9]/.test(ch))return .58;return .5}
   class PDFDoc{
-    constructor(){this.pages=[[]];this.pageIndex=0;this.font='normal';this.fontSize=10;this.textColor=[0,0,0];this.drawColor=[0,0,0];this.lineWidth=.2;this.image=null;this.imageWidth=600;this.imageHeight=849}
+    constructor(){this.pages=[[]];this.pageIndex=0;this.font='normal';this.fontSize=10;this.textColor=[0,0,0];this.drawColor=[0,0,0];this.lineWidth=.2;this.image=null;this.imageWidth=450;this.imageHeight=637}
     setFont(_name,style='normal'){this.font=String(style).toLowerCase().includes('bold')?'bold':'normal';return this}
     setFontSize(n){this.fontSize=Number(n)||10;return this}
     setTextColor(...v){if(v.length===1){const g=(Number(v[0])||0)/255;this.textColor=[g,g,g]}else this.textColor=v.slice(0,3).map(x=>(Number(x)||0)/255);return this}
