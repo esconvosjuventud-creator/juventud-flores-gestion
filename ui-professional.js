@@ -23,7 +23,7 @@
     css('jf-google-calendar-link','./google-calendar-link.css?v=1.0.0');js('jf-google-calendar-link','./google-calendar-link.js?v=1.0.0');
     js('soraya-google-auto','./google-auto-connect.js?v=1.0.0');
     css('soraya-google-unified','./google-unified-sync.css?v=1.0.0');js('soraya-google-unified','./google-unified-sync.js?v=1.0.0');
-    css('soraya-calendar-pro','./calendar-professional.css?v=2.0.0');js('soraya-calendar-pro','./calendar-professional.js?v=2.0.0');
+    css('soraya-calendar-pro','./calendar-professional.css?v=3.0.0');js('soraya-calendar-pro','./calendar-professional.js?v=3.0.0');
     css('soraya-priority-center','./priority-center.css?v=1.0.0');js('soraya-priority-center','./priority-center.js?v=1.0.0');
     css('soraya-institution-filter','./institution-filter.css?v=1.0.0');js('soraya-institution-filter','./institution-filter.js?v=1.0.0');
     css('soraya-task-teamwork','./task-teamwork.css?v=1.0.0');js('soraya-task-teamwork','./task-teamwork.js?v=1.0.0');
