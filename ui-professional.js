@@ -25,7 +25,7 @@
     css('soraya-task-teamwork','./task-teamwork.css?v=1.0.0');js('soraya-task-teamwork','./task-teamwork.js?v=1.0.0');
     js('soraya-i18n','./soraya-i18n.js?v=1.0.0');
     js('soraya-pdf-engine','./soraya-pdf-engine.js?v=1.0.0');
-    js('soraya-letterhead-bg','./letterhead-background.js?v=1.0.0');
+    js('soraya-letterhead-bg','./letterhead-background.js?v=3.0.0');
     js('soraya-letterhead','./letterhead-template.js?v=3.0.0');
     css('soraya-universal-search','./universal-search.css?v=1.0.0');js('soraya-universal-search','./universal-search.js?v=1.0.0');
     css('soraya-duplicates','./duplicate-detector.css?v=1.0.0');js('soraya-duplicates','./duplicate-detector.js?v=1.0.0');
