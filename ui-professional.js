@@ -21,6 +21,7 @@
     css('jf-team-ui-v3','./ui-team-v3.css?v=4.0.0');css('jf-team-ui-v3-brand','./ui-team-v3-brand.css?v=4.0.0');js('jf-team-ui-v4','./ui-team-v4.js?v=4.0.0');
     css('jf-help-guide','./help-guide.css?v=1.0.0');js('jf-help-guide','./help-guide.js?v=1.0.0');
     css('jf-google-calendar-link','./google-calendar-link.css?v=1.0.0');js('jf-google-calendar-link','./google-calendar-link.js?v=1.0.0');
+    js('soraya-google-auto','./google-auto-connect.js?v=1.0.0');
     css('soraya-google-unified','./google-unified-sync.css?v=1.0.0');js('soraya-google-unified','./google-unified-sync.js?v=1.0.0');
     css('soraya-task-teamwork','./task-teamwork.css?v=1.0.0');js('soraya-task-teamwork','./task-teamwork.js?v=1.0.0');
     js('soraya-i18n','./soraya-i18n.js?v=1.0.0');
