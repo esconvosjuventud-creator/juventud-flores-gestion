@@ -32,6 +32,7 @@ jobs:
           node --check letterhead-official-meta.js
           node --check soraya-i18n.js
           node --check task-teamwork.js
+          node --check google-auto-connect.js
           node --check google-unified-sync.js
           node --check universal-search.js
           node --check duplicate-detector.js
