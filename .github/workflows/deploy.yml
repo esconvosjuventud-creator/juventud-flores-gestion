@@ -21,6 +21,16 @@ jobs:
         uses: actions/checkout@v4
       - name: Validar JavaScript crítico
         run: |
+          node --check official-letterhead-part-01.js
+          node --check official-letterhead-part-02.js
+          node --check official-letterhead-part-03.js
+          node --check official-letterhead-part-04.js
+          node --check official-letterhead-part-05.js
+          node --check official-letterhead-part-06.js
+          node --check official-letterhead-part-07.js
+          node --check official-letterhead-part-08.js
+          node --check official-letterhead-part-09.js
+          node --check official-letterhead-part-10.js
           node --check official-letterhead-vector.js
           node --check soraya-pdf-engine.js
           node --check letterhead-template.js
@@ -36,11 +46,17 @@ jobs:
         run: |
           node - <<'NODE'
           global.window=global;
+          const crypto=require('crypto');
+          for(let i=1;i<=10;i++) require(`./official-letterhead-part-${String(i).padStart(2,'0')}.js`);
+          const payload=(global.__SORAYA_VECTOR_PARTS__||[]).join('');
+          const payloadSha=crypto.createHash('sha256').update(payload).digest('hex');
+          if(payloadSha!=='718dee8a7ac35a3084dfb5c3ad0ec4ab739d732dcf530ef6e17cd0256c082707') throw new Error('Las partes del membrete no coinciden con la plantilla aprobada');
           require('./official-letterhead-vector.js');
           const Engine=require('./soraya-pdf-engine.js');
           const T=global.SORAYA_VECTOR_LETTERHEAD;
           if(!T || T.pageWidth!==596 || T.pageHeight!==842) throw new Error('El membrete no conserva el tamaño A4 del PDF original');
           if(!T.images?.image11?.base64 || !T.images?.image12?.base64) throw new Error('Faltan recursos originales del encabezado');
+          if(T.images.image11.base64.length!==11704 || T.images.image12.base64.length!==21560) throw new Error('Los recursos gráficos del membrete quedaron incompletos');
           if(global.SORAYA_OFFICIAL_PDF_SHA256!=='5a14778159dd8b1e1d726355d93605355e7a32a4db0b5af7972aff69d8785d30') throw new Error('No corresponde al PDF oficial aprobado');
           const blank=new Engine.PDFDoc();
           const blankBytes=blank.toUint8Array();
@@ -52,7 +68,7 @@ jobs:
           doc.setFont('helvetica','normal').setFontSize(10).text('Documento A4 con membrete oficial',20,70);
           const bytes=doc.toUint8Array();
           if(bytes.length<=blankBytes.length) throw new Error('El documento no incorporó el contenido sobre la plantilla');
-          console.log('Membrete PDF A4 OK · plantilla:',blankBytes.length,'bytes · documento:',bytes.length,'bytes');
+          console.log('Membrete PDF A4 OK · plantilla:',blankBytes.length,'bytes · documento:',bytes.length,'bytes · payload SHA:',payloadSha);
           NODE
       - name: Setup Pages
         uses: actions/configure-pages@v5
