@@ -24,6 +24,7 @@
     js('soraya-google-auto','./google-auto-connect.js?v=1.0.0');
     css('soraya-google-unified','./google-unified-sync.css?v=1.0.0');js('soraya-google-unified','./google-unified-sync.js?v=1.0.0');
     css('soraya-calendar-pro','./calendar-professional.css?v=1.0.0');js('soraya-calendar-pro','./calendar-professional.js?v=1.0.0');
+    css('soraya-institution-filter','./institution-filter.css?v=1.0.0');js('soraya-institution-filter','./institution-filter.js?v=1.0.0');
     css('soraya-task-teamwork','./task-teamwork.css?v=1.0.0');js('soraya-task-teamwork','./task-teamwork.js?v=1.0.0');
     js('soraya-i18n','./soraya-i18n.js?v=1.0.0');
     js('soraya-letterhead-part01','./official-letterhead-part-01.js?v=4.1.0');
