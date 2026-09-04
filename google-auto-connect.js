@@ -10,7 +10,8 @@
   const startFn=C.googleFunctions?.start||'google-oauth-start';
   const CHECK_EVERY=10*60*1000;
   const RETRY_GUARD=30*60*1000;
-  const TASKS_WRITE_SCOPE='https://www.googleapis.com/auth/tasks';
+  const TASKS_SCOPE='https://www.googleapis.com/auth/tasks';
+  const CALENDAR_SCOPE='https://www.googleapis.com/auth/calendar.events';
   let running=false,timer=null,lastStatus=null;
 
   const $=id=>document.getElementById(id);
@@ -22,18 +23,23 @@
   function recentAttempt(uid){const t=Number(sessionStorage.getItem(attemptKey(uid))||0);return t&&Date.now()-t<RETRY_GUARD}
   function markAttempt(uid){sessionStorage.setItem(attemptKey(uid),String(Date.now()))}
   function clearAttempt(uid){sessionStorage.removeItem(attemptKey(uid))}
-  function hasTasksWrite(st){const scope=String(st?.metadata?.scope||'');return scope.split(/\s+/).includes(TASKS_WRITE_SCOPE)}
+  function scopes(st){return String(st?.metadata?.scope||'').split(/\s+/).filter(Boolean)}
+  function hasScope(st,scope){return scopes(st).includes(scope)}
+  function hasTasks(st){return hasScope(st,TASKS_SCOPE)}
+  function hasCalendar(st){return hasScope(st,CALENDAR_SCOPE)}
+  function complete(st){return !!st?.connected&&hasTasks(st)&&hasCalendar(st)}
+  function missingLabel(st){const missing=[];if(!hasCalendar(st))missing.push('Google Calendar');if(!hasTasks(st))missing.push('Google Tasks');return missing.join(' y ')}
   function updateUi(st){
-    const label=$('googleStatus'),btn=$('googleConnectBtn'),tasksOk=hasTasksWrite(st);
+    const label=$('googleStatus'),btn=$('googleConnectBtn'),ok=complete(st),missing=missingLabel(st);
     if(label){
-      if(st?.connected&&tasksOk)label.textContent='Google conectado automáticamente · Calendar, Drive, Gmail y Google Tasks autorizados.';
-      else if(st?.connected)label.textContent='Google conectado. Falta autorizar Google Tasks para completar la integración.';
-      else if(st?.configured)label.textContent='Google listo para autorizar. Soraya conectará la cuenta automáticamente.';
+      if(ok)label.textContent='Google conectado automáticamente · Calendar y Google Tasks sincronizados.';
+      else if(st?.connected)label.textContent=`Google conectado. Soraya completará automáticamente la autorización de ${missing||'los servicios pendientes'}.`;
+      else if(st?.configured)label.textContent='Google listo. Soraya conectará automáticamente Calendar y Google Tasks.';
       else label.textContent='Google todavía no está configurado en Soraya.';
     }
-    if(btn&&st?.configured){btn.disabled=false;btn.textContent=st?.connected?(tasksOk?'Reconectar Google':'Autorizar Google Tasks'):'Conectar Google';}
-    document.documentElement.classList.toggle('soraya-google-connected',!!st?.connected&&tasksOk);
-    document.documentElement.classList.toggle('soraya-google-tasks-pending',!!st?.connected&&!tasksOk);
+    if(btn&&st?.configured){btn.disabled=false;btn.textContent=ok?'Reconectar Google':st?.connected?'Autorizar Calendar + Tasks':'Conectar Calendar + Tasks';}
+    document.documentElement.classList.toggle('soraya-google-connected',ok);
+    document.documentElement.classList.toggle('soraya-google-permissions-pending',!!st?.connected&&!ok);
   }
   async function getStatus(){
     const {data,error}=await db.functions.invoke(actionFn,{body:{action:'status'}});
@@ -45,7 +51,7 @@
     if(recentAttempt(uid))return false;
     markAttempt(uid);
     const redirectTo=`${location.origin}${location.pathname}#/dashboard?google=connected`;
-    toast('Abriendo autorización de Google Tasks…');
+    toast('Conectando Google Calendar y Google Tasks…');
     const {data,error}=await db.functions.invoke(startFn,{body:{redirectTo}});
     if(error){sessionStorage.removeItem(attemptKey(uid));throw error}
     const payload=normalize(data),url=payload?.url||data?.url;
@@ -66,13 +72,9 @@
       if(!s?.user)return null;
       const uid=s.user.id;
       const st=await getStatus();
-      if(st?.connected&&hasTasksWrite(st)){
+      if(complete(st)){
         clearAttempt(uid);
         await syncConnected();
-        return st;
-      }
-      if(st?.connected&&!hasTasksWrite(st)){
-        if(allowRedirect)await startOAuth(uid);
         return st;
       }
       if(st?.configured&&allowRedirect){
@@ -97,5 +99,5 @@
   window.addEventListener('online',()=>ensureConnected({allowRedirect:false}));
   window.addEventListener('hashchange',()=>{if(appVisible())setTimeout(()=>ensureConnected({allowRedirect:false}),300)});
   setTimeout(boot,700);
-  window.SorayaGoogleAutoConnect={check:()=>ensureConnected({allowRedirect:false}),connect:()=>ensureConnected({allowRedirect:true}),get status(){return lastStatus},get tasksWritable(){return hasTasksWrite(lastStatus)}};
+  window.SorayaGoogleAutoConnect={check:()=>ensureConnected({allowRedirect:false}),connect:()=>ensureConnected({allowRedirect:true}),get status(){return lastStatus},get tasksAuthorized(){return hasTasks(lastStatus)},get calendarAuthorized(){return hasCalendar(lastStatus)},get complete(){return complete(lastStatus)}};
 })();
