@@ -43,6 +43,7 @@ jobs:
           node --check priority-center.js
           node --check institution-filter.js
           node --check universal-search.js
+          node --check saved-filters.js
           node --check duplicate-detector.js
           node --check ui-professional.js
       - name: Validación oficial del membrete PDF A4
