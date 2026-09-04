@@ -21,13 +21,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Validar JavaScript crítico
         run: |
+          node --check official-letterhead-vector.js
           node --check soraya-pdf-engine.js
-          node --check letterhead-bg-1.js
-          node --check letterhead-bg-2.js
-          node --check letterhead-bg-3.js
-          node --check letterhead-bg-4.js
-          node --check letterhead-bg-5.js
-          node --check letterhead-background.js
           node --check letterhead-template.js
           node --check letterhead-official-meta.js
           node --check soraya-i18n.js
@@ -37,32 +32,27 @@ jobs:
           node --check universal-search.js
           node --check duplicate-detector.js
           node --check ui-professional.js
-      - name: Prueba real del motor PDF
+      - name: Prueba real del membrete PDF A4
         run: |
           node - <<'NODE'
           global.window=global;
-          require('./soraya-pdf-engine.js');
-          require('./letterhead-bg-1.js');
-          require('./letterhead-bg-2.js');
-          require('./letterhead-bg-3.js');
-          require('./letterhead-bg-4.js');
-          require('./letterhead-bg-5.js');
-          require('./letterhead-background.js');
-          const b64=(global.SORAYA_LETTERHEAD_BG||'').split(',')[1]||'';
-          const image=Buffer.from(b64,'base64');
-          if(image.length<7000) throw new Error('El membrete quedó incompleto');
-          if(image[0]!==0xff || image[1]!==0xd8 || image[image.length-2]!==0xff || image[image.length-1]!==0xd9) throw new Error('JPEG de membrete inválido o truncado');
-          const doc=new global.SorayaPDFEngine.PDFDoc();
-          doc.addImage(global.SORAYA_LETTERHEAD_BG,'JPEG',0,0,210,297);
+          require('./official-letterhead-vector.js');
+          const Engine=require('./soraya-pdf-engine.js');
+          const T=global.SORAYA_VECTOR_LETTERHEAD;
+          if(!T || T.pageWidth!==596 || T.pageHeight!==842) throw new Error('El membrete no conserva el tamaño A4 del PDF original');
+          if(!T.images?.image11?.base64 || !T.images?.image12?.base64) throw new Error('Faltan recursos originales del encabezado');
+          if(global.SORAYA_OFFICIAL_PDF_SHA256!=='5a14778159dd8b1e1d726355d93605355e7a32a4db0b5af7972aff69d8785d30') throw new Error('No corresponde al PDF oficial aprobado');
+          const blank=new Engine.PDFDoc();
+          const blankBytes=blank.toUint8Array();
+          const blankHead=Buffer.from(blankBytes.slice(0,8)).toString('latin1');
+          const blankTail=Buffer.from(blankBytes.slice(-20)).toString('latin1');
+          if(!blankHead.startsWith('%PDF-1.4')||!blankTail.includes('%%EOF')) throw new Error('PDF membretado incompleto');
+          const doc=new Engine.PDFDoc();
           doc.setFont('helvetica','bold').setFontSize(12).text('PRUEBA SORAYA',20,55);
-          doc.setFont('helvetica','normal').setFontSize(10).text('Oficina de la Juventud - PDF institucional',20,70);
+          doc.setFont('helvetica','normal').setFontSize(10).text('Documento A4 con membrete oficial',20,70);
           const bytes=doc.toUint8Array();
-          const head=Buffer.from(bytes.slice(0,8)).toString('latin1');
-          const tail=Buffer.from(bytes.slice(-20)).toString('latin1');
-          if(!head.startsWith('%PDF-1.4')) throw new Error('Encabezado PDF inválido');
-          if(!tail.includes('%%EOF')) throw new Error('PDF incompleto');
-          if(bytes.length<=image.length) throw new Error('El PDF no contiene estructura adicional al membrete');
-          console.log('Membrete OK:',image.length,'bytes · PDF OK:',bytes.length,'bytes');
+          if(bytes.length<=blankBytes.length) throw new Error('El documento no incorporó el contenido sobre la plantilla');
+          console.log('Membrete PDF A4 OK · plantilla:',blankBytes.length,'bytes · documento:',bytes.length,'bytes');
           NODE
       - name: Setup Pages
         uses: actions/configure-pages@v5
