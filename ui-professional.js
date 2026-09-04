@@ -27,6 +27,7 @@
     js('soraya-pdf-engine','./soraya-pdf-engine.js?v=1.0.0');
     js('soraya-letterhead-bg','./letterhead-background.js?v=3.0.0');
     js('soraya-letterhead','./letterhead-template.js?v=3.0.0');
+    js('soraya-letterhead-meta','./letterhead-official-meta.js?v=3.0.0');
     css('soraya-universal-search','./universal-search.css?v=1.0.0');js('soraya-universal-search','./universal-search.js?v=1.0.0');
     css('soraya-duplicates','./duplicate-detector.css?v=1.0.0');js('soraya-duplicates','./duplicate-detector.js?v=1.0.0');
     css('soraya-brand','./soraya-brand.css?v=1.0.0');js('soraya-brand','./soraya-brand.js?v=1.0.0');
