@@ -50,7 +50,8 @@ jobs:
           for(let i=1;i<=10;i++) require(`./official-letterhead-part-${String(i).padStart(2,'0')}.js`);
           const payload=(global.__SORAYA_VECTOR_PARTS__||[]).join('');
           const payloadSha=crypto.createHash('sha256').update(payload).digest('hex');
-          if(payloadSha!=='718dee8a7ac35a3084dfb5c3ad0ec4ab739d732dcf530ef6e17cd0256c082707') throw new Error('Las partes del membrete no coinciden con la plantilla aprobada');
+          console.log('PAYLOAD_SHA='+payloadSha);
+          if(payloadSha!=='718dee8a7ac35a3084dfb5c3ad0ec4ab739d732dcf530ef6e17cd0256c082707') throw new Error(`Las partes del membrete no coinciden con la plantilla aprobada. Hash actual: ${payloadSha}`);
           require('./official-letterhead-vector.js');
           const Engine=require('./soraya-pdf-engine.js');
           const T=global.SORAYA_VECTOR_LETTERHEAD;
