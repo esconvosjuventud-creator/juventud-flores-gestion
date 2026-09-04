@@ -22,8 +22,14 @@ jobs:
       - name: Validar JavaScript crítico
         run: |
           node --check soraya-pdf-engine.js
+          node --check letterhead-bg-1.js
+          node --check letterhead-bg-2.js
+          node --check letterhead-bg-3.js
+          node --check letterhead-bg-4.js
+          node --check letterhead-bg-5.js
           node --check letterhead-background.js
           node --check letterhead-template.js
+          node --check letterhead-official-meta.js
           node --check soraya-i18n.js
           node --check task-teamwork.js
           node --check google-unified-sync.js
@@ -35,6 +41,11 @@ jobs:
           node - <<'NODE'
           global.window=global;
           require('./soraya-pdf-engine.js');
+          require('./letterhead-bg-1.js');
+          require('./letterhead-bg-2.js');
+          require('./letterhead-bg-3.js');
+          require('./letterhead-bg-4.js');
+          require('./letterhead-bg-5.js');
           require('./letterhead-background.js');
           const b64=(global.SORAYA_LETTERHEAD_BG||'').split(',')[1]||'';
           const image=Buffer.from(b64,'base64');
