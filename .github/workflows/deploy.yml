@@ -42,47 +42,61 @@ jobs:
           node --check universal-search.js
           node --check duplicate-detector.js
           node --check ui-professional.js
-      - name: Prueba real del membrete PDF A4
+      - name: Validación oficial del membrete PDF A4
         run: |
           node - <<'NODE'
           global.window=global;
           const crypto=require('crypto');
           const sha=v=>crypto.createHash('sha256').update(v).digest('hex');
+
           for(let i=1;i<=10;i++) require(`./official-letterhead-part-${String(i).padStart(2,'0')}.js`);
           const parts=global.__SORAYA_VECTOR_PARTS__||[];
           if(parts.filter(Boolean).length!==10) throw new Error('Faltan partes del membrete oficial');
-          const payload=parts.join('');
-          const payloadSha=sha(payload);
-          if(payloadSha!=='74210031226ca832137088513b7e08edb3748d6c760c94bb102edd327ad36d4d') throw new Error(`El paquete del membrete fue modificado: ${payloadSha}`);
+          const rawPayload=parts.join('');
+          const rawPayloadSha=sha(rawPayload);
+          if(rawPayloadSha!=='74210031226ca832137088513b7e08edb3748d6c760c94bb102edd327ad36d4d') throw new Error(`El paquete base del membrete fue modificado: ${rawPayloadSha}`);
+
           require('./official-letterhead-vector.js');
           const Engine=require('./soraya-pdf-engine.js');
           const T=global.SORAYA_VECTOR_LETTERHEAD;
-          if(!T || T.pageWidth!==596 || T.pageHeight!==842) throw new Error('El membrete no conserva 596 × 842 pt (A4)');
-          if(!T.images?.image11?.base64 || !T.images?.image12?.base64) throw new Error('Faltan recursos gráficos originales');
+
+          if(!T || T.pageWidth!==596 || T.pageHeight!==842) throw new Error('La plantilla no conserva 596 × 842 pt (A4)');
+          if(global.SORAYA_OFFICIAL_PDF_SHA256!=='5a14778159dd8b1e1d726355d93605355e7a32a4db0b5af7972aff69d8785d30') throw new Error('La plantilla no está asociada al PDF oficial aprobado');
+          if(!T.images?.image11?.base64 || !T.images?.image12?.base64) throw new Error('Faltan los recursos gráficos originales');
+
           const img11=Buffer.from(T.images.image11.base64,'base64');
           const img12=Buffer.from(T.images.image12.base64,'base64');
-          console.log('IMG11_LEN='+img11.length+' IMG11_SHA='+sha(img11));
-          console.log('IMG12_LEN='+img12.length+' IMG12_SHA='+sha(img12));
-          if(global.SORAYA_OFFICIAL_PDF_SHA256!=='5a14778159dd8b1e1d726355d93605355e7a32a4db0b5af7972aff69d8785d30') throw new Error('La plantilla no está asociada al PDF oficial aprobado');
+          if(img11.length!==8776 || sha(img11)!=='44bf5146b2d8a13493c0adefbf5ff9db966e323088cb692810a6ab7975f3dea6') throw new Error('El encabezado izquierdo no coincide con el PDF oficial');
+          if(img12.length!==16170 || sha(img12)!=='fc2096ba84c069a4e277dca74fdd2a51269ed2cd6c57a728231532bba854c6c2') throw new Error('El encabezado derecho no coincide con el PDF oficial');
+
           if(!T.content.includes('59.6 764.6 371.98 3.3 re') || !T.content.includes('59.6 32.2 371.98 3.3 re')) throw new Error('Faltan las líneas institucionales superior o inferior');
-          if(!T.content.includes('juv') || !T.content.includes('OFI')) throw new Error('Falta contenido del pie institucional');
+          if(!T.content.includes('[(juv)-4(e)-6(nt)7(ud)-2(@f)-3(lore)9(s)-6(.gub.uy)]')) throw new Error('Falta el correo institucional en el pie');
+          if(!T.content.includes('/Image11 Do') || !T.content.includes('/Image12 Do')) throw new Error('Faltan los logos del encabezado');
+
           const blank=new Engine.PDFDoc();
           const blankBytes=blank.toUint8Array();
           const blankText=Buffer.from(blankBytes).toString('latin1');
-          if(!blankText.startsWith('%PDF-1.4')||!blankText.includes('%%EOF')) throw new Error('PDF membretado incompleto');
-          if(!blankText.includes('/MediaBox [0 0 595.276 841.890]')) throw new Error('El PDF generado no mantiene A4');
+          if(!blankText.startsWith('%PDF-1.4') || !blankText.includes('%%EOF')) throw new Error('El PDF membretado está incompleto');
+          if(!blankText.includes('/MediaBox [0 0 596 842]')) throw new Error('El PDF generado no mantiene el tamaño A4 del archivo oficial');
+          if(!blankText.includes('/Image11 16 0 R') || !blankText.includes('/Image12 17 0 R')) throw new Error('Los recursos originales no quedaron embebidos en el PDF');
+
           const doc=new Engine.PDFDoc();
           doc.setFont('helvetica','bold').setFontSize(12).text('PRUEBA SORAYA',20,55);
           doc.setFont('helvetica','normal').setFontSize(10).text('Documento A4 con membrete oficial',20,70);
           doc.addPage();
-          doc.setFont('helvetica','bold').setFontSize(12).text('SEGUNDA PÁGINA',20,55);
+          doc.setFont('helvetica','bold').setFontSize(12).text('SEGUNDA PAGINA',20,55);
           const bytes=doc.toUint8Array();
           const text=Buffer.from(bytes).toString('latin1');
           if(bytes.length<=blankBytes.length) throw new Error('El documento no incorporó contenido');
           if((text.match(/\/Type \/Page\b/g)||[]).length<2) throw new Error('No se pudo generar un documento multipágina');
-          if((text.match(/\/Im1 Do/g)||[]).length<4) throw new Error('El membrete no se repite correctamente en todas las páginas');
-          console.log('VALIDACION_BASE_OK');
-          console.log('Paquete interno SHA256:',payloadSha);
+          if((text.match(/\/Image11 Do/g)||[]).length<2 || (text.match(/\/Image12 Do/g)||[]).length<2) throw new Error('El membrete no se repite en todas las páginas');
+
+          console.log('VALIDACION OFICIAL OK');
+          console.log('PDF origen SHA256: 5a14778159dd8b1e1d726355d93605355e7a32a4db0b5af7972aff69d8785d30');
+          console.log('A4: 596 x 842 pt');
+          console.log('Encabezado izquierdo SHA256:',sha(img11));
+          console.log('Encabezado derecho SHA256:',sha(img12));
+          console.log('Multipagina: OK');
           NODE
       - name: Setup Pages
         uses: actions/configure-pages@v5
