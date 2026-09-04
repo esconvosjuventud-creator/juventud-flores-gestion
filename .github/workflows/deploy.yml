@@ -40,6 +40,7 @@ jobs:
           node --check google-auto-connect.js
           node --check google-unified-sync.js
           node --check calendar-professional.js
+          node --check priority-center.js
           node --check institution-filter.js
           node --check universal-search.js
           node --check duplicate-detector.js
