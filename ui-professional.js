@@ -14,6 +14,7 @@
   function loadAssets(){
     css('jf-exec-dashboard','./dashboard-executive.css?v=1.0.1');js('jf-exec-dashboard','./dashboard-executive.js?v=1.0.1');
     css('jf-quick-task','./quick-task.css?v=1.0.1');js('jf-quick-task','./quick-task.js?v=1.0.1');
+    js('soraya-task-project-selector','./task-project-selector.js?v=1.0.0');
     css('jf-quick-schedule','./quick-schedule.css?v=1.0.1');js('jf-quick-schedule','./quick-schedule.js?v=1.0.1');js('jf-quick-schedule-hook','./quick-schedule-hook.js?v=1.0.2');
     js('jf-agenda-stability','./agenda-stability.js?v=1.0.0');
     js('jf-performance-v2','./performance-v2.js?v=2.0.0');
