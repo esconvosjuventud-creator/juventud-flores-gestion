@@ -14,6 +14,7 @@
 
   function toast(msg){const n=$('#toast');if(!n)return;n.textContent=msg;n.classList.add('show');clearTimeout(window.__sorayaProjectToast);window.__sorayaProjectToast=setTimeout(()=>n.classList.remove('show'),2600)}
   function canWrite(){try{return typeof window.canWrite==='function'?window.canWrite():true}catch{return true}}
+  function isProjectCategory(form){return String(form?.elements?.category?.value||'').trim().toLowerCase()==='proyecto'}
 
   async function loadData(){
     if(loading)return;
@@ -36,7 +37,7 @@
 
   function projectOptions(currentName=''){
     const current=String(currentName||'').trim();
-    const options=['<option value="">Sin proyecto vinculado</option>'];
+    const options=[`<option value="">${projects.length?'Seleccionar proyecto…':'No hay proyectos cargados'}</option>`];
     for(const p of projects){
       const selected=current&&p.name===current?' selected':'';
       const status=p.status?` · ${p.status}`:'';
@@ -46,24 +47,67 @@
     return options.join('');
   }
 
+  function removeHelp(label){label?.querySelector('.soraya-project-help')?.remove()}
+  function addHelp(label,text,warn=false){
+    removeHelp(label);
+    const help=document.createElement('span');
+    help.className='muted small soraya-project-help';
+    help.textContent=text;
+    if(warn)help.style.color='#9b4b12';
+    label.appendChild(help);
+  }
+
+  function makeTextProject(current=''){
+    const input=document.createElement('input');
+    input.name='project_name';
+    input.type='text';
+    input.value=current||'';
+    input.dataset.sorayaProjectText='1';
+    return input;
+  }
+
   function decorateTaskForm(){
     const form=$('#entityForm');
     if(!form||form.dataset.resource!=='tasks')return;
+    const category=form.elements.category;
     let field=form.querySelector('[name="project_name"]');
-    if(!field||field.dataset.sorayaProjectSelect==='1')return;
+    if(!category||!field)return;
+
+    if(category.dataset.sorayaProjectCategoryHook!=='1'){
+      category.dataset.sorayaProjectCategoryHook='1';
+      category.addEventListener('change',()=>setTimeout(decorateTaskForm,0));
+    }
+
     const label=field.closest('label');
     if(!label)return;
     const current=String(field.value||'');
-    const select=document.createElement('select');
-    select.name='project_name';
-    select.dataset.sorayaProjectSelect='1';
-    select.innerHTML=projectOptions(current);
-    field.replaceWith(select);
-    if(!label.querySelector('.soraya-project-help')){
-      const help=document.createElement('span');
-      help.className='muted small soraya-project-help';
-      help.textContent='La tarea quedará vinculada al proyecto seleccionado y aparecerá dentro de sus actividades.';
-      label.appendChild(help);
+
+    if(isProjectCategory(form)){
+      if(field.tagName!=='SELECT'||field.dataset.sorayaProjectSelect!=='1'){
+        const select=document.createElement('select');
+        select.name='project_name';
+        select.required=true;
+        select.dataset.sorayaProjectSelect='1';
+        select.setAttribute('aria-label','Proyecto asociado a la tarea');
+        select.innerHTML=projectOptions(current);
+        field.replaceWith(select);
+        field=select;
+      }else{
+        const selected=String(field.value||current);
+        field.innerHTML=projectOptions(selected);
+        field.value=selected;
+        field.required=true;
+      }
+      if(projects.length)addHelp(label,'Elegí uno de los proyectos cargados en Soraya. La tarea quedará vinculada a ese proyecto.');
+      else addHelp(label,'No hay proyectos cargados. Primero creá un proyecto en la sección Proyectos para poder asignar esta tarea.',true);
+    }else{
+      if(field.tagName==='SELECT'&&field.dataset.sorayaProjectSelect==='1'){
+        const input=makeTextProject(current);
+        field.replaceWith(input);
+        field=input;
+      }
+      field.required=false;
+      removeHelp(label);
     }
   }
 
@@ -87,11 +131,18 @@
         if((type==='date'||type==='time')&&v==='')v=null;
         body[name]=v;
       }
-      const projectSelect=form.querySelector('select[data-soraya-project-select="1"]');
-      const selected=projectSelect?.selectedOptions?.[0];
-      body.project_name=projectSelect?.value||'';
-      body.project_id=selected?.dataset?.projectId||null;
-      if(selected?.dataset?.legacy==='1')body.project_id=null;
+
+      if(isProjectCategory(form)){
+        const projectSelect=form.querySelector('select[data-soraya-project-select="1"]');
+        if(!projectSelect?.value)throw new Error(projects.length?'Seleccioná un proyecto para esta tarea.':'No hay proyectos cargados para asignar.');
+        const selected=projectSelect.selectedOptions?.[0];
+        body.project_name=projectSelect.value;
+        body.project_id=selected?.dataset?.projectId||null;
+        if(selected?.dataset?.legacy==='1')body.project_id=null;
+      }else{
+        body.project_id=null;
+      }
+
       const {data:{session}}=await db.auth.getSession();
       if(!session?.user)throw new Error('La sesión venció. Volvé a ingresar.');
       body.created_by=session.user.id;
@@ -104,7 +155,7 @@
       try{if(typeof loadAll==='function')await loadAll()}catch{}
       await loadData();
       window.dispatchEvent(new CustomEvent('jf:data-changed',{detail:{resource:'tasks',project_id:body.project_id}}));
-      toast(id?'Tarea actualizada y vinculada':'Tarea creada y vinculada');
+      toast(id?'Tarea actualizada':'Tarea creada');
     }catch(err){toast(err?.message||'No se pudo guardar la tarea')}
     finally{if(submit){submit.disabled=false;submit.textContent='Guardar'}}
   }
