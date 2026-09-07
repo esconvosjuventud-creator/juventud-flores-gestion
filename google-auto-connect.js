@@ -32,9 +32,9 @@
   function updateUi(st){
     const label=$('googleStatus'),btn=$('googleConnectBtn'),ok=complete(st),missing=missingLabel(st);
     if(label){
-      if(ok)label.textContent='Google conectado automáticamente · Calendar y Google Tasks sincronizados.';
-      else if(st?.connected)label.textContent=`Google conectado. Soraya completará automáticamente la autorización de ${missing||'los servicios pendientes'}.`;
-      else if(st?.configured)label.textContent='Google listo. Soraya conectará automáticamente Calendar y Google Tasks.';
+      if(ok)label.textContent='Google conectado · Calendar y Google Tasks se sincronizan automáticamente.';
+      else if(st?.connected)label.textContent=`Google conectado. Falta autorizar ${missing||'algún servicio'}; Soraya seguirá funcionando normalmente.`;
+      else if(st?.configured)label.textContent='Google está disponible. Podés autorizar Calendar y Google Tasks desde este botón.';
       else label.textContent='Google todavía no está configurado en Soraya.';
     }
     if(btn&&st?.configured){btn.disabled=false;btn.textContent=ok?'Reconectar Google':st?.connected?'Autorizar Calendar + Tasks':'Conectar Calendar + Tasks';}
@@ -51,7 +51,7 @@
     if(recentAttempt(uid))return false;
     markAttempt(uid);
     const redirectTo=`${location.origin}${location.pathname}#/dashboard?google=connected`;
-    toast('Conectando Google Calendar y Google Tasks…');
+    toast('Abriendo autorización de Google Calendar y Google Tasks…');
     const {data,error}=await db.functions.invoke(startFn,{body:{redirectTo}});
     if(error){sessionStorage.removeItem(attemptKey(uid));throw error}
     const payload=normalize(data),url=payload?.url||data?.url;
@@ -64,7 +64,7 @@
       if(window.SorayaGoogleSync?.sync)await window.SorayaGoogleSync.sync(false,false);
     }catch(e){console.warn('[Soraya Google] sincronización automática',e)}
   }
-  async function ensureConnected({allowRedirect=true}={}){
+  async function ensureConnected({allowRedirect=false}={}){
     if(running||!appVisible())return lastStatus;
     running=true;
     try{
@@ -77,13 +77,11 @@
         await syncConnected();
         return st;
       }
-      if(st?.configured&&allowRedirect){
-        await startOAuth(uid);
-      }
+      if(st?.configured&&allowRedirect)await startOAuth(uid);
       return st;
     }catch(e){
       console.warn('[Soraya Google] conexión automática',e);
-      const label=$('googleStatus');if(label)label.textContent='No se pudo comprobar Google automáticamente. Podés reconectar desde Configuración.';
+      const label=$('googleStatus');if(label)label.textContent='No se pudo comprobar Google. Soraya sigue disponible; podés reconectar desde Configuración.';
       return null;
     }finally{running=false}
   }
@@ -91,7 +89,7 @@
   async function boot(){
     for(let i=0;i<20&&!appVisible();i++)await new Promise(r=>setTimeout(r,300));
     if(!appVisible())return;
-    await ensureConnected({allowRedirect:true});
+    await ensureConnected({allowRedirect:false});
     schedule();
   }
 
