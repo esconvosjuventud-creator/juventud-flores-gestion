@@ -15,6 +15,7 @@
   function toast(msg){const n=$('#toast');if(!n)return;n.textContent=msg;n.classList.add('show');clearTimeout(window.__sorayaProjectToast);window.__sorayaProjectToast=setTimeout(()=>n.classList.remove('show'),2600)}
   function canWrite(){try{return typeof window.canWrite==='function'?window.canWrite():true}catch{return true}}
   function isProjectCategory(form){return String(form?.elements?.category?.value||'').trim().toLowerCase()==='proyecto'}
+  function projectsSignature(){return projects.map(p=>`${p.id}|${p.name}|${p.status||''}`).join('~')}
 
   async function loadData(){
     if(loading)return;
@@ -49,6 +50,8 @@
 
   function removeHelp(label){label?.querySelector('.soraya-project-help')?.remove()}
   function addHelp(label,text,warn=false){
+    const old=label.querySelector('.soraya-project-help');
+    if(old&&old.textContent===text)return;
     removeHelp(label);
     const help=document.createElement('span');
     help.className='muted small soraya-project-help';
@@ -83,20 +86,25 @@
     const current=String(field.value||'');
 
     if(isProjectCategory(form)){
+      const sig=projectsSignature();
       if(field.tagName!=='SELECT'||field.dataset.sorayaProjectSelect!=='1'){
         const select=document.createElement('select');
         select.name='project_name';
         select.required=true;
         select.dataset.sorayaProjectSelect='1';
+        select.dataset.sorayaProjectSig=sig;
         select.setAttribute('aria-label','Proyecto asociado a la tarea');
         select.innerHTML=projectOptions(current);
         field.replaceWith(select);
         field=select;
       }else{
-        const selected=String(field.value||current);
-        field.innerHTML=projectOptions(selected);
-        field.value=selected;
         field.required=true;
+        if(field.dataset.sorayaProjectSig!==sig){
+          const selected=String(field.value||current);
+          field.innerHTML=projectOptions(selected);
+          field.value=selected;
+          field.dataset.sorayaProjectSig=sig;
+        }
       }
       if(projects.length)addHelp(label,'Elegí uno de los proyectos cargados en Soraya. La tarea quedará vinculada a ese proyecto.');
       else addHelp(label,'No hay proyectos cargados. Primero creá un proyecto en la sección Proyectos para poder asignar esta tarea.',true);
