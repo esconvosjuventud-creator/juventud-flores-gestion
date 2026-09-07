@@ -21,11 +21,8 @@
     css('jf-team-ui-v3','./ui-team-v3.css?v=4.0.0');css('jf-team-ui-v3-brand','./ui-team-v3-brand.css?v=4.0.0');js('jf-team-ui-v4','./ui-team-v4.js?v=4.0.0');
     css('jf-help-guide','./help-guide.css?v=1.0.0');js('jf-help-guide','./help-guide.js?v=1.0.0');
     css('jf-google-calendar-link','./google-calendar-link.css?v=1.0.0');js('jf-google-calendar-link','./google-calendar-link.js?v=1.0.0');
-    js('soraya-google-auto','./google-auto-connect.js?v=1.0.0');
+    js('soraya-google-auto','./google-auto-connect.js?v=1.0.1');
     css('soraya-google-unified','./google-unified-sync.css?v=1.0.0');js('soraya-google-unified','./google-unified-sync.js?v=1.0.0');
-    css('soraya-calendar-pro','./calendar-professional.css?v=3.0.0');js('soraya-calendar-pro','./calendar-professional.js?v=3.0.0');
-    css('soraya-priority-center','./priority-center.css?v=1.0.0');js('soraya-priority-center','./priority-center.js?v=1.0.0');
-    css('soraya-institution-filter','./institution-filter.css?v=1.0.0');js('soraya-institution-filter','./institution-filter.js?v=1.0.0');
     css('soraya-task-teamwork','./task-teamwork.css?v=1.0.0');js('soraya-task-teamwork','./task-teamwork.js?v=1.0.0');
     js('soraya-i18n','./soraya-i18n.js?v=1.0.0');
     js('soraya-letterhead-part01','./official-letterhead-part-01.js?v=4.1.0');
@@ -43,10 +40,8 @@
     js('soraya-letterhead','./letterhead-template.js?v=4.1.0');
     js('soraya-letterhead-meta','./letterhead-official-meta.js?v=4.1.0');
     css('soraya-universal-search','./universal-search.css?v=1.0.0');js('soraya-universal-search','./universal-search.js?v=1.0.0');
-    css('soraya-saved-filters','./saved-filters.css?v=1.0.0');js('soraya-saved-filters','./saved-filters.js?v=1.0.0');
     css('soraya-duplicates','./duplicate-detector.css?v=1.0.0');js('soraya-duplicates','./duplicate-detector.js?v=1.0.0');
     css('soraya-brand','./soraya-brand.css?v=1.0.0');js('soraya-brand','./soraya-brand.js?v=1.0.0');
-    js('soraya-task-project-link','./task-project-link.js?v=1.0.0');
   }
 
   buildMobileNav();modalA11y();loadAssets();syncMobile();
