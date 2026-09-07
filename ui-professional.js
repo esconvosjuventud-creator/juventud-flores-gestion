@@ -46,6 +46,7 @@
     css('soraya-saved-filters','./saved-filters.css?v=1.0.0');js('soraya-saved-filters','./saved-filters.js?v=1.0.0');
     css('soraya-duplicates','./duplicate-detector.css?v=1.0.0');js('soraya-duplicates','./duplicate-detector.js?v=1.0.0');
     css('soraya-brand','./soraya-brand.css?v=1.0.0');js('soraya-brand','./soraya-brand.js?v=1.0.0');
+    js('soraya-task-project-link','./task-project-link.js?v=1.0.0');
   }
 
   buildMobileNav();modalA11y();loadAssets();syncMobile();
