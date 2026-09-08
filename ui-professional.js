@@ -25,6 +25,7 @@
     css('soraya-google-unified','./google-unified-sync.css?v=1.0.0');js('soraya-google-unified','./google-unified-sync.js?v=1.0.0');
     css('soraya-calendar-professional','./calendar-professional.css?v=1.0.1');js('soraya-calendar-professional','./calendar-professional.js?v=1.0.1');
     css('soraya-calendar-day-panel','./calendar-day-panel.css?v=1.0.0');js('soraya-calendar-day-panel','./calendar-day-panel.js?v=1.0.0');
+    css('soraya-calendar-week-v2','./calendar-week-v2.css?v=2.0.0');js('soraya-calendar-week-v2','./calendar-week-v2.js?v=2.0.0');
     css('soraya-task-teamwork','./task-teamwork.css?v=1.0.0');js('soraya-task-teamwork','./task-teamwork.js?v=1.0.0');
     js('soraya-i18n','./soraya-i18n.js?v=1.0.0');
     js('soraya-letterhead-part01','./official-letterhead-part-01.js?v=4.1.0');
