@@ -14,7 +14,6 @@
   function loadAssets(){
     css('jf-exec-dashboard','./dashboard-executive.css?v=1.0.1');js('jf-exec-dashboard','./dashboard-executive.js?v=1.0.1');
     css('jf-quick-task','./quick-task.css?v=1.0.1');js('jf-quick-task','./quick-task.js?v=1.0.1');
-    js('soraya-task-project-link','./task-project-link.js?v=2.0.0');
     css('jf-quick-schedule','./quick-schedule.css?v=1.0.1');js('jf-quick-schedule','./quick-schedule.js?v=1.0.1');js('jf-quick-schedule-hook','./quick-schedule-hook.js?v=1.0.2');
     js('jf-agenda-stability','./agenda-stability.js?v=1.0.0');
     js('jf-performance-v2','./performance-v2.js?v=2.0.0');
@@ -24,7 +23,6 @@
     css('jf-google-calendar-link','./google-calendar-link.css?v=1.0.0');js('jf-google-calendar-link','./google-calendar-link.js?v=1.0.0');
     js('soraya-google-auto','./google-auto-connect.js?v=1.0.1');
     css('soraya-google-unified','./google-unified-sync.css?v=1.0.0');js('soraya-google-unified','./google-unified-sync.js?v=1.0.0');
-    css('soraya-calendar-safe','./calendar-professional.css?v=4.1.0');js('soraya-calendar-safe','./calendar-professional.js?v=4.1.0');
     css('soraya-task-teamwork','./task-teamwork.css?v=1.0.0');js('soraya-task-teamwork','./task-teamwork.js?v=1.0.0');
     js('soraya-i18n','./soraya-i18n.js?v=1.0.0');
     js('soraya-letterhead-part01','./official-letterhead-part-01.js?v=4.1.0');
