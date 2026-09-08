@@ -42,6 +42,7 @@ jobs:
           node --check google-unified-sync.js
           node --check calendar-professional.js
           node --check calendar-day-panel.js
+          node --check calendar-week-v2.js
           node --check priority-center.js
           node --check institution-filter.js
           node --check universal-search.js
