@@ -10,11 +10,15 @@
     followup:{label:'Seguimiento',icon:'↗'},project:{label:'Proyecto',icon:'▣'},opportunity:{label:'Oportunidad',icon:'★'},
     'google-calendar':{label:'Google Calendar',icon:'G'},'google-task':{label:'Google Tasks',icon:'G✓'}
   };
+  const QUICK_FILTERS=[
+    ['all','Todo'],['today','Hoy'],['week','Esta semana'],['tasks','Tareas'],['meeting','Reuniones'],['event','Eventos'],
+    ['google-calendar','Google Calendar'],['google-task','Google Tasks'],['pending','Pendientes'],['urgent','Urgentes / Alta']
+  ];
   const MONTHS=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
   const MAX_MONTH_ITEMS=6;
   let anchor=new Date();
   let mode=(window.matchMedia&&window.matchMedia('(max-width:760px)').matches)?'agenda':'month';
-  let query='',typeFilter='',hideDone=false,selectedDay='';
+  let query='',typeFilter='',hideDone=false,selectedDay='',quickFilter='all';
   let entriesByKey=new Map(),renderTimer=null,installed=false;
 
   try{const saved=localStorage.getItem('soraya_calendar_safe_mode');if(['month','week','agenda'].includes(saved))mode=saved}catch{}
@@ -24,7 +28,7 @@
   const baseGrid=()=>byId('calendarGrid');
   function active(){return !!root()?.classList.contains('active')}
   function appState(){try{return typeof state!=='undefined'?state:null}catch{return null}}
-  function esc(v){return String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#039;'}[s]))}
+  function esc(v){return String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[s]))}
   function norm(v){return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim()}
   function pad(n){return String(n).padStart(2,'0')}
   function iso(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
@@ -52,7 +56,21 @@
     const st=new Date(anchor.getFullYear(),anchor.getMonth(),1,12),en=new Date(anchor.getFullYear(),anchor.getMonth()+1,0,12);return{start:iso(st),end:iso(en)};
   }
   function inRange(v,r){return !!v&&String(v)>=r.start&&String(v)<=r.end}
+  function matchesQuick(x){
+    if(quickFilter==='all')return true;
+    if(quickFilter==='today')return x.date===todayIso();
+    if(quickFilter==='week'){const td=parseIso(todayIso())||new Date(),st=iso(startWeek(td)),en=iso(addDays(startWeek(td),6));return x.date>=st&&x.date<=en}
+    if(quickFilter==='tasks')return ['task','activity','workshop','deadline'].includes(x.type);
+    if(quickFilter==='meeting')return x.type==='meeting';
+    if(quickFilter==='event')return x.type==='event';
+    if(quickFilter==='google-calendar')return x.type==='google-calendar';
+    if(quickFilter==='google-task')return x.type==='google-task';
+    if(quickFilter==='pending')return ['task','activity','workshop','deadline','followup','google-task'].includes(x.type)&&!x.done;
+    if(quickFilter==='urgent')return ['Urgente','Alta'].includes(x.priority)&&!x.done;
+    return true;
+  }
   function matches(x){
+    if(!matchesQuick(x))return false;
     if(typeFilter&&x.type!==typeFilter)return false;
     if(hideDone&&x.done)return false;
     const q=norm(query);if(!q)return true;
@@ -84,28 +102,40 @@
   function renderAgenda(entries){const groups=indexByDate(entries);if(!groups.size)return'<div class="jf-cal-safe-noresults">No hay actividades para mostrar con estos filtros.</div>';return `<div class="jf-cal-safe-agenda">${[...groups].map(([date,rows])=>{const d=parseIso(date);return `<section class="jf-cal-safe-agenda-day"><div class="jf-cal-safe-date"><span>${new Intl.DateTimeFormat('es-UY',{weekday:'short'}).format(d)}</span><strong>${d.getDate()}</strong><small>${new Intl.DateTimeFormat('es-UY',{month:'short'}).format(d)}</small></div><div class="jf-cal-safe-agenda-list">${rows.map(x=>renderEntry(x)).join('')}</div></section>`}).join('')}</div>`}
   function renderSelectedDay(entries){if(!selectedDay)return'';const rows=entries.filter(x=>x.date===selectedDay),d=parseIso(selectedDay);if(!rows.length)return'';return `<section class="jf-cal-safe-day-detail"><div class="jf-cal-safe-day-detail-head"><div><small>DÍA COMPLETO</small><strong>${new Intl.DateTimeFormat('es-UY',{weekday:'long',day:'numeric',month:'long'}).format(d)}</strong></div><button type="button" data-cal-safe-close-day>×</button></div><div>${rows.map(x=>renderEntry(x)).join('')}</div></section>`}
   function rangeLabel(){if(mode==='week'){const st=startWeek(anchor),en=addDays(st,6);return `${fmtShort(st)} – ${fmtShort(en)} ${en.getFullYear()}`}return titleForMonth(anchor)}
+  function quickMarkup(){return `<div class="jf-cal-safe-quick" aria-label="Filtros rápidos"><span>Filtros rápidos</span>${QUICK_FILTERS.map(([id,label])=>`<button type="button" data-cal-safe-quick="${id}">${esc(label)}</button>`).join('')}</div>`}
 
   function ensureLayer(){
     const view=root(),grid=baseGrid();if(!view||!grid)return null;let layer=byId('sorayaCalendarEnhancedLayer');if(layer)return layer;
-    layer=document.createElement('section');layer.id='sorayaCalendarEnhancedLayer';layer.className='jf-cal-safe-layer';grid.parentNode.insertBefore(layer,grid);layer.innerHTML=`<div class="jf-cal-safe-head"><div><p>AGENDA INTEGRADA</p><h2>Calendario operativo</h2><span>Todo el mes, con tareas, reuniones, eventos, vencimientos y Google.</span></div></div><div class="jf-cal-safe-controls"><div class="jf-cal-safe-nav"><button type="button" data-cal-safe-prev>←</button><strong id="jfCalSafeRange"></strong><button type="button" data-cal-safe-next>→</button></div><button type="button" data-cal-safe-today>Hoy</button><div class="jf-cal-safe-modes"><button type="button" data-cal-safe-mode="month">Mes</button><button type="button" data-cal-safe-mode="week">Semana</button><button type="button" data-cal-safe-mode="agenda">Agenda</button></div></div><div class="jf-cal-safe-filters"><input id="jfCalSafeSearch" type="search" placeholder="Buscar tareas, reuniones, eventos…"><select id="jfCalSafeType"><option value="">Todos los tipos</option>${Object.entries(TYPES).map(([k,v])=>`<option value="${k}">${esc(v.label)}</option>`).join('')}</select><label><input id="jfCalSafeHideDone" type="checkbox"> Ocultar realizadas</label></div><div id="jfCalSafeSummary" class="jf-cal-safe-summary"></div><div id="jfCalSafeDayDetail"></div><div id="jfCalSafeContent"></div>`;
-    layer.addEventListener('click',handleClick);byId('jfCalSafeSearch').addEventListener('input',e=>{query=e.target.value||'';scheduleRender()});byId('jfCalSafeType').addEventListener('change',e=>{typeFilter=e.target.value||'';render()});byId('jfCalSafeHideDone').addEventListener('change',e=>{hideDone=!!e.target.checked;render()});
+    layer=document.createElement('section');layer.id='sorayaCalendarEnhancedLayer';layer.className='jf-cal-safe-layer';grid.parentNode.insertBefore(layer,grid);layer.innerHTML=`<div class="jf-cal-safe-head"><div><p>AGENDA INTEGRADA</p><h2>Calendario operativo</h2><span>Todo el mes, con tareas, reuniones, eventos, vencimientos y Google.</span></div></div><div class="jf-cal-safe-controls"><div class="jf-cal-safe-nav"><button type="button" data-cal-safe-prev>←</button><strong id="jfCalSafeRange"></strong><button type="button" data-cal-safe-next>→</button></div><button type="button" data-cal-safe-today>Hoy</button><div class="jf-cal-safe-modes"><button type="button" data-cal-safe-mode="month">Mes</button><button type="button" data-cal-safe-mode="week">Semana</button><button type="button" data-cal-safe-mode="agenda">Agenda</button></div></div><div class="jf-cal-safe-filters"><input id="jfCalSafeSearch" type="search" placeholder="Buscar tareas, reuniones, eventos…"><select id="jfCalSafeType"><option value="">Todos los tipos</option>${Object.entries(TYPES).map(([k,v])=>`<option value="${k}">${esc(v.label)}</option>`).join('')}</select><label><input id="jfCalSafeHideDone" type="checkbox"> Ocultar realizadas</label></div>${quickMarkup()}<div id="jfCalSafeSummary" class="jf-cal-safe-summary"></div><div id="jfCalSafeDayDetail"></div><div id="jfCalSafeContent"></div>`;
+    layer.addEventListener('click',handleClick);
+    byId('jfCalSafeSearch').addEventListener('input',e=>{query=e.target.value||'';scheduleRender()});
+    byId('jfCalSafeType').addEventListener('change',e=>{quickFilter='all';typeFilter=e.target.value||'';render()});
+    byId('jfCalSafeHideDone').addEventListener('change',e=>{quickFilter='all';hideDone=!!e.target.checked;render()});
     return layer;
+  }
+  function applyQuickFilter(id){
+    quickFilter=QUICK_FILTERS.some(([k])=>k===id)?id:'all';
+    typeFilter='';hideDone=false;selectedDay='';query='';
+    const search=byId('jfCalSafeSearch'),type=byId('jfCalSafeType'),done=byId('jfCalSafeHideDone');if(search)search.value='';if(type)type.value='';if(done)done.checked=false;
+    if(['today','week'].includes(quickFilter))anchor=parseIso(todayIso())||new Date();
+    render();
   }
   function handleClick(e){
     const entry=e.target.closest('[data-cal-safe-entry]');if(entry){const x=entriesByKey.get(entry.dataset.calSafeEntry);if(x)openEntry(x);return}
     const day=e.target.closest('[data-cal-safe-day]');if(day){selectedDay=day.dataset.calSafeDay;render();return}
     if(e.target.closest('[data-cal-safe-close-day]')){selectedDay='';render();return}
+    const qb=e.target.closest('[data-cal-safe-quick]');if(qb){applyQuickFilter(qb.dataset.calSafeQuick);return}
     const mb=e.target.closest('[data-cal-safe-mode]');if(mb){mode=mb.dataset.calSafeMode;selectedDay='';try{localStorage.setItem('soraya_calendar_safe_mode',mode)}catch{};render();return}
     if(e.target.closest('[data-cal-safe-prev]')){navigate(-1);return}if(e.target.closest('[data-cal-safe-next]')){navigate(1);return}if(e.target.closest('[data-cal-safe-today]')){anchor=parseIso(todayIso())||new Date();selectedDay='';render()}
   }
   function navigate(delta){if(mode==='week')anchor=addDays(anchor,delta*7);else anchor=new Date(anchor.getFullYear(),anchor.getMonth()+delta,1,12);selectedDay='';render()}
   function openEntry(x){if(x.google){if(/^https:\/\//i.test(x.link))window.open(x.link,'_blank','noopener');return}if(x.resource&&x.id&&typeof window.openDetails==='function')window.openDetails(x.resource,x.id)}
   function render(){
-    if(!active())return;const layer=ensureLayer();if(!layer)return;entriesByKey=new Map();const r=visibleRange(),entries=collectEntries(r),today=todayIso();byId('jfCalSafeRange').textContent=rangeLabel();layer.querySelectorAll('[data-cal-safe-mode]').forEach(b=>b.classList.toggle('active',b.dataset.calSafeMode===mode));const urgent=entries.filter(x=>['Urgente','Alta'].includes(x.priority)&&!x.done).length,google=entries.filter(x=>x.google).length,todayCount=entries.filter(x=>x.date===today&&!x.done).length;byId('jfCalSafeSummary').innerHTML=`<div><strong>${entries.length}</strong><span>registros en el período</span></div><div><strong>${todayCount}</strong><span>para hoy</span></div><div class="${urgent?'alert':''}"><strong>${urgent}</strong><span>prioridad alta/urgente</span></div><div><strong>${google}</strong><span>desde Google</span></div>`;byId('jfCalSafeDayDetail').innerHTML=renderSelectedDay(entries);byId('jfCalSafeContent').innerHTML=mode==='month'?renderMonth(entries):mode==='week'?renderWeek(entries):renderAgenda(entries)}
+    if(!active())return;const layer=ensureLayer();if(!layer)return;entriesByKey=new Map();const r=visibleRange(),entries=collectEntries(r),today=todayIso();byId('jfCalSafeRange').textContent=rangeLabel();layer.querySelectorAll('[data-cal-safe-mode]').forEach(b=>b.classList.toggle('active',b.dataset.calSafeMode===mode));layer.querySelectorAll('[data-cal-safe-quick]').forEach(b=>b.classList.toggle('active',b.dataset.calSafeQuick===quickFilter));const urgent=entries.filter(x=>['Urgente','Alta'].includes(x.priority)&&!x.done).length,google=entries.filter(x=>x.google).length,todayCount=entries.filter(x=>x.date===today&&!x.done).length;byId('jfCalSafeSummary').innerHTML=`<div><strong>${entries.length}</strong><span>registros visibles</span></div><div><strong>${todayCount}</strong><span>para hoy</span></div><div class="${urgent?'alert':''}"><strong>${urgent}</strong><span>prioridad alta/urgente</span></div><div><strong>${google}</strong><span>desde Google</span></div>`;byId('jfCalSafeDayDetail').innerHTML=renderSelectedDay(entries);byId('jfCalSafeContent').innerHTML=mode==='month'?renderMonth(entries):mode==='week'?renderWeek(entries):renderAgenda(entries)}
   function scheduleRender(){if(!active())return;clearTimeout(renderTimer);renderTimer=setTimeout(render,120)}
   function activate(){if(!active())return;anchor=baseMonth();ensureLayer();render()}
 
   function boot(){if(installed)return;installed=true;document.addEventListener('click',e=>{if(e.target.closest('[data-view="calendar"],[data-jf-mobile="calendar"]'))setTimeout(activate,80)});window.addEventListener('hashchange',()=>{if(location.hash.startsWith('#/calendar'))setTimeout(activate,80)});window.addEventListener('jf:data-changed',scheduleRender);window.addEventListener('jf:google-sync-updated',scheduleRender);if(active())activate()}
   setTimeout(boot,700);
-  window.SorayaCalendarEnhanced={render:()=>active()&&render(),goToday(){anchor=parseIso(todayIso())||new Date();render()},setMode(v){if(['month','week','agenda'].includes(v)){mode=v;render()}},get mode(){return mode}};
+  window.SorayaCalendarEnhanced={render:()=>active()&&render(),goToday(){anchor=parseIso(todayIso())||new Date();render()},setMode(v){if(['month','week','agenda'].includes(v)){mode=v;render()}},setQuickFilter:applyQuickFilter,get mode(){return mode},get quickFilter(){return quickFilter}};
 })();
