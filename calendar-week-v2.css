@@ -1,0 +1,78 @@
+/* Vista Semana v2: prioriza legibilidad y no recorta registros */
+#sorayaCalendarEnhancedLayer.jf-week-v2-active .jf-cal-safe-week{
+  display:grid;
+  grid-template-columns:repeat(7,minmax(165px,1fr));
+  gap:10px;
+  overflow-x:auto;
+  overflow-y:visible;
+  padding:2px 2px 8px;
+  align-items:start;
+}
+#sorayaCalendarEnhancedLayer.jf-week-v2-active .jf-cal-safe-weekcol{
+  min-width:165px;
+  border:1px solid #e2e6eb;
+  border-radius:15px;
+  background:#fff;
+  overflow:visible;
+}
+#sorayaCalendarEnhancedLayer.jf-week-v2-active .jf-cal-safe-weekcol>header{
+  position:sticky;
+  top:0;
+  z-index:1;
+  background:#f8f9fa;
+}
+#sorayaCalendarEnhancedLayer.jf-week-v2-active .jf-cal-safe-weekcol.today>header{
+  background:#f8f1f6;
+}
+#sorayaCalendarEnhancedLayer.jf-week-v2-active .jf-cal-safe-weekcol>div{
+  max-height:none!important;
+  overflow:visible!important;
+  padding:8px;
+}
+#sorayaCalendarEnhancedLayer.jf-week-v2-active .jf-cal-safe-week .jf-cal-safe-entry{
+  margin-bottom:6px;
+  min-height:42px;
+  white-space:normal;
+}
+#sorayaCalendarEnhancedLayer.jf-week-v2-active .jf-cal-safe-week .jf-cal-safe-entry span{
+  white-space:normal;
+  overflow-wrap:anywhere;
+  line-height:1.25;
+}
+
+@media(max-width:760px){
+  #sorayaCalendarEnhancedLayer.jf-week-v2-active .jf-cal-safe-week{
+    grid-template-columns:1fr;
+    overflow:visible;
+    gap:10px;
+    padding-bottom:0;
+  }
+  #sorayaCalendarEnhancedLayer.jf-week-v2-active .jf-cal-safe-weekcol{
+    min-width:0;
+    display:grid;
+    grid-template-columns:72px minmax(0,1fr);
+    overflow:hidden;
+  }
+  #sorayaCalendarEnhancedLayer.jf-week-v2-active .jf-cal-safe-weekcol>header{
+    position:static;
+    align-self:stretch;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    min-height:92px;
+    border-right:1px solid #e8ebef;
+    border-bottom:0;
+    border-radius:0;
+  }
+  #sorayaCalendarEnhancedLayer.jf-week-v2-active .jf-cal-safe-weekcol>div{
+    min-width:0;
+    padding:8px;
+  }
+  #sorayaCalendarEnhancedLayer.jf-week-v2-active .jf-cal-safe-week .jf-cal-safe-entry{
+    grid-template-columns:42px minmax(0,1fr);
+  }
+  #sorayaCalendarEnhancedLayer.jf-week-v2-active .jf-cal-safe-week .jf-cal-safe-entry em{
+    grid-column:2;
+    justify-self:start;
+  }
+}
