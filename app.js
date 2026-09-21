@@ -6,6 +6,7 @@ const sb=window.supabase.createClient(C.supabaseUrl,C.supabasePublishableKey,{
 const $=id=>document.getElementById(id);
 const state={session:null,user:null,profile:null,view:'dashboard',tasks:[],events:[],meetings:[],projects:[],contacts:[],institutions:[],notes:[],participation_records:[],opportunities:[],notifications:[],month:new Date(),google:null};
 const priorityRank={Urgente:1,Alta:2,Media:3,Baja:4};
+let contactRenderLimit=50;
 
 const schemas={
  tasks:{title:'Tarea',eyebrow:'CHECKLIST JUVENTUD',fields:[
@@ -79,6 +80,7 @@ function bindStatic(){
  $('startScanner').onclick=startScanner;$('stopScanner').onclick=stopScanner;$('manualCheckin').onclick=()=>doCheckin($('manualToken').value);
  $('exportPdfBtn').onclick=exportPdf;$('exportExcelBtn').onclick=exportExcel;$('saveMemory').onclick=saveMemory;$('memoryPdf').onclick=memoryPdf;$('memoryYear').onchange=loadMemory;
  $('googleConnectBtn').onclick=connectGoogle;$('googleTestEmail').onclick=testEmail;
+ if($('contactSearch'))$('contactSearch').oninput=()=>{contactRenderLimit=50;renderContacts()};
 }
 
 async function route(){
@@ -138,12 +140,14 @@ function renderCards(){
  cardList('events',state.events,x=>x.name,x=>`${fmtDate(x.event_date)} · ${x.start_time||'Sin hora'} · ${x.place||'Lugar a confirmar'}`);
  cardList('meetings',state.meetings,x=>x.subject,x=>`${fmtDate(x.meeting_date)} · ${x.meeting_time||'Sin hora'} · ${x.place||'Lugar a confirmar'}`);
  cardList('projects',state.projects,x=>x.name,x=>`${x.status} · ${x.start_date?fmtDate(x.start_date):'Sin fecha'}`);
- cardList('contacts',state.contacts,x=>`${x.first_name} ${x.last_name||''}`,x=>`${x.organization||'Sin institución'} · ${x.phone||x.whatsapp||x.email||'Sin contacto'}`);
+ renderContacts();
  cardList('institutions',state.institutions,x=>x.name,x=>`${x.area||'Sin área'} · ${x.locality||'Flores'}`);
  cardList('notes',state.notes,x=>x.subject,x=>`${fmtDate(x.note_date)} · ${x.status} · ${x.recipient||'Sin destinatario'}`);
  cardList('participation_records',state.participation_records,x=>x.activity_name,x=>`${fmtDate(x.activity_date)} · Total: ${x.total} · ${x.locality||'Sin localidad'}`);
  cardList('opportunities',state.opportunities,x=>x.title,x=>`${x.category} · ${x.status}${x.deadline?' · Cierre '+fmtDate(x.deadline):''}${x.public_enabled?' · 🌐 Pública':''}`);
 }
+function renderContacts(){const el=$('contactsList');if(!el)return;const q=($('contactSearch')?.value||'').trim().toLowerCase();let list=state.contacts;if(q)list=list.filter(x=>[x.first_name,x.last_name,x.organization,x.position,x.phone,x.whatsapp,x.email].join(' ').toLowerCase().includes(q));const visible=list.slice(0,contactRenderLimit);cardList('contacts',visible,x=>`${x.first_name} ${x.last_name||''}`,x=>`${x.organization||'Sin institución'} · ${x.phone||x.whatsapp||x.email||'Sin contacto'}`);if($('contactCount'))$('contactCount').textContent=`${list.length} contacto${list.length===1?'':'s'}`;if(list.length>visible.length)el.insertAdjacentHTML('beforeend',`<div class="actions" style="grid-column:1/-1;justify-content:center"><button class="secondary-btn" onclick="showMoreContacts()">Mostrar 50 más (${list.length-visible.length} restantes)</button></div>`)}
+window.showMoreContacts=()=>{contactRenderLimit+=50;renderContacts()};
 function cardList(resource,list,titleFn,metaFn){const el=$(resource==='participation_records'?'participationList':resource+'List');if(!el)return;el.innerHTML=list.length?list.map(x=>`<article class="card"><p class="eyebrow">${esc(resource.replaceAll('_',' '))}</p><h3>${esc(titleFn(x))}</h3><p class="muted">${esc(metaFn(x))}</p><div class="actions"><button class="secondary-btn" onclick="openDetails('${resource}','${x.id}')">Ver detalle</button>${canWrite()?`<button class="secondary-btn" onclick="editEntity('${resource}','${x.id}')">Editar</button><button class="danger-btn" onclick="archiveEntity('${resource}','${x.id}')">Archivar</button>${resource==='events'?`<button class="secondary-btn" onclick="openChecklist('${x.id}')">☑ Checklist</button><button class="secondary-btn" onclick="openEventPublic('${x.id}')">🌐 Público</button><button class="secondary-btn" onclick="syncGoogle('events','${x.id}')">📅</button>`:''}`:''}</div></article>`).join(''):'<div class="empty">No hay registros.</div>'}
 
 function renderCalendar(){const y=state.month.getFullYear(),m=state.month.getMonth();$('monthTitle').textContent=new Intl.DateTimeFormat('es-UY',{month:'long',year:'numeric'}).format(state.month);const first=new Date(y,m,1),start=(first.getDay()+6)%7;let html=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'].map(x=>`<div class="cal-head">${x}</div>`).join('');for(let i=0;i<42;i++){const d=new Date(y,m,1-start+i),iso=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`,ts=state.tasks.filter(t=>t.task_date===iso).slice(0,2),es=state.events.filter(e=>e.event_date===iso).slice(0,2);html+=`<div class="cal-day ${d.getMonth()!==m?'other':''}"><div class="cal-num">${d.getDate()}</div>${ts.map(t=>`<div class="cal-item">${esc(t.title)}</div>`).join('')}${es.map(e=>`<div class="cal-item event">${esc(e.name)}</div>`).join('')}</div>`}$('calendarGrid').innerHTML=html}
