@@ -8,6 +8,7 @@
   <title>Juventud Flores – Gestión</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./rincon-panel.css?v=1">
   <link rel="icon" href="./assets/icon-192.png">
 </head>
 <body>
@@ -78,6 +79,7 @@
         <button data-view="events">🎪 Eventos</button>
         <button data-view="meetings">🤝 Reuniones</button>
         <button data-view="projects">📂 Proyectos</button>
+        <button id="rinconNav" data-view="rincon" class="hidden">💛 Rincón Te Escucha</button>
         <button data-view="contacts">👥 Contactos</button>
         <button data-view="institutions">🏢 Instituciones</button>
         <button data-view="notes">📄 Notas y solicitudes</button>
@@ -140,6 +142,22 @@
       <section id="view-projects" class="view">
         <div class="page-head"><div><p class="eyebrow">GESTIÓN</p><h1>Proyectos</h1></div><button class="primary-btn" data-add="projects">＋ Nuevo proyecto</button></div>
         <div id="projectsList" class="cards"></div>
+      </section>
+
+      <section id="view-rincon" class="view">
+        <div class="page-head"><div><p class="eyebrow">PARTICIPACIÓN JUVENIL</p><h1>Rincón Te Escucha</h1><p class="muted">Propuestas recibidas desde el formulario web. Acceso reservado al equipo.</p></div><button id="rinconRefresh" class="secondary-btn" type="button">Actualizar</button></div>
+        <div id="rinconStats" class="rincon-stats" aria-live="polite"></div>
+        <div class="card rincon-panel">
+          <div class="rincon-filters">
+            <label>Buscar en propuestas<input id="rinconSearch" type="search" placeholder="Palabra o frase"></label>
+            <label>Estado<select id="rinconStatusFilter"><option value="">Todos los estados</option><option value="new">Nueva</option><option value="reviewing">En revisión</option><option value="considered">Considerada</option><option value="implemented">Implementada</option><option value="archived">Archivada</option></select></label>
+            <label>Tema<select id="rinconCategoryFilter"><option value="">Todos los temas</option></select></label>
+          </div>
+          <p id="rinconMessage" class="muted" role="status"></p>
+          <div id="rinconList" class="rincon-list"></div>
+          <button id="rinconMore" class="secondary-btn hidden" type="button">Cargar más</button>
+        </div>
+        <div id="rinconDetail" class="card rincon-detail hidden"></div>
       </section>
 
       <section id="view-contacts" class="view">
@@ -230,5 +248,6 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="./config.js"></script>
   <script src="./app.js"></script>
+  <script src="./rincon-panel.js?v=1"></script>
 </body>
 </html>
